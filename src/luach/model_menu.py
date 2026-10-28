@@ -31,9 +31,12 @@ from luach import config, db
 logger = logging.getLogger(__name__)
 
 #: A model id as a model server names one: "qwen3.6-35b", "openrouter/google/gemini-3.8-flash",
-#: "~deepseek/deepseek-flash-latest". No colon (tulip reads "provider:model", so a colon
-#: would choose a provider), no spaces, nothing that is not plausibly a name.
-MODEL_ID = re.compile(r"^[A-Za-z0-9~][A-Za-z0-9._~/@+-]{0,127}$")
+#: "~deepseek/deepseek-flash-latest", and with a colon Ollama's "qwen3:8b" or
+#: "hf.co/org/model-GGUF:Q4_K_M" and OpenRouter's "meta/model:free". The id goes to the
+#: model server as it is and is never read for a provider (``runtime.get_model`` builds
+#: the OpenAI-compatible client itself), so a colon is only a character. No spaces or
+#: control characters, at most 128, nothing that is not plausibly a name.
+MODEL_ID = re.compile(r"^[A-Za-z0-9~][A-Za-z0-9._~/@+:-]{0,127}$")
 MAX_MODELS = 30
 MAX_NAME = 60
 MAX_ABOUT = 300
@@ -48,7 +51,33 @@ DEFAULT_ABOUT = "The household's default."
 
 
 def valid_id(model_id: str) -> bool:
-    return bool(MODEL_ID.fullmatch(model_id or "")) and "//" not in model_id
+    """Whether luach will send this id to the model server. A colon separates two
+    parts ("qwen3:8b"); one at the end, or two together, is not a name."""
+    return (
+        bool(MODEL_ID.fullmatch(model_id or ""))
+        and "//" not in model_id
+        and "::" not in model_id
+        and not model_id.endswith(":")
+    )
+
+
+def effort_none(model_id: str) -> bool:
+    """Whether a request to this model carries ``reasoning_effort: "none"``.
+
+    luach turns thinking off with vLLM's ``chat_template_kwargs``, which Ollama
+    ignores; Ollama honours ``reasoning_effort: "none"`` instead. Not every server
+    takes a parameter it does not know (OpenAI's own refuses it for a model that
+    does not reason), so by default it goes only to a model the owner marked as
+    running at home; ``LUACH_REASONING_EFFORT_NONE`` says ``always`` or ``never``.
+    Never while thinking is on (``LUACH_ENABLE_THINKING``).
+    """
+    if config.enable_thinking():
+        return False
+    when = config.reasoning_effort_none()
+    if when != "local":
+        return when == "always"
+    choice = get(model_id) if model_id else None
+    return choice is not None and choice.local
 
 
 @dataclass(frozen=True)
@@ -257,8 +286,8 @@ def default_id() -> str:
 
 
 def ready() -> bool:
-    """Whether a model can answer at all: an endpoint and a default to ask."""
-    return bool(config.model_base_url() and default_id())
+    """Whether a model can answer at all: an endpoint, and a default luach can send."""
+    return bool(config.model_base_url() and valid_id(default_id()))
 
 
 def choices() -> list[Choice]:
@@ -330,8 +359,7 @@ def _clean_text(value: Any, what: str, limit: int, *, required: bool = False) ->
 def check_id(model_id: Any) -> str:
     if not isinstance(model_id, str) or not valid_id(model_id.strip()):
         raise MenuError(
-            "that is not a model id: up to 128 letters, digits and . _ ~ / @ + -, "
-            "no spaces or colons"
+            "that is not a model id: up to 128 letters, digits and . _ ~ / @ + - :, no spaces"
         )
     return model_id.strip()
 

@@ -131,7 +131,7 @@ class TestTheMenu:
             '[{"name": "no id"}]',
             '[{"id": ""}]',
             '[{"id": "two words"}]',
-            '[{"id": "anthropic:claude"}]',
+            '[{"id": "qwen3::8b"}]',
             '["just-a-name"]',
             json.dumps([*MENU, 7]),
         ],
@@ -240,7 +240,9 @@ class TestWhoAnswers:
         ("openrouter/anthropic/claude-x", "openrouter/anthropic/claude-x"),
         ("", ""),
         ("   ", ""),
-        ("anthropic:claude-x", ""),  # a colon would choose a provider, not a model
+        # A colon is part of a name ("qwen3:8b"): the request's model, never a provider.
+        ("anthropic:claude-x", "anthropic:claude-x"),
+        ("qwen3::8b", ""),
         ("two words", ""),
         ("x" * 200, ""),
     ],

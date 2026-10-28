@@ -323,8 +323,9 @@ price_out?}, health, failures, last_ok_at, trial:{passed,total,verdict,at}|null}
 trials_left_today, catalogue:{configured, source}}`. `provider_set` is what the owner
 typed (`""`: worked out from the id).
 
-Ids are up to 128 characters of letters, digits and `. _ ~ / @ + -`, starting with a
-letter, digit or `~`; no spaces and no colon (400 otherwise). A name is at most 60
+Ids are up to 128 characters of letters, digits and `. _ ~ / @ + - :`, starting with a
+letter, digit or `~`; no spaces, no `//`, and a colon only between two parts, as in Ollama's
+`qwen3:8b` (400 otherwise). A name is at most 60
 characters, `about` 300, `provider` 80; the list holds at most 30 models.
 
 **The catalogue** is the endpoint's own `GET {OPENAI_BASE_URL}/models`, or

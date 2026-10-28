@@ -368,6 +368,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         from luach.calendar.client import FAKE_WARNING
 
         logger.warning(FAKE_WARNING)
+    if config.model_id() and not model_menu.valid_id(config.model_id()):
+        logger.warning(
+            "LUACH_MODEL is not a model id luach can send (%r): up to 128 letters, digits "
+            "and . _ ~ / @ + - :, no spaces",
+            config.model_id()[:200],
+        )
     if not model_menu.ready():
         logger.warning(
             "no model is configured: the assistant will say so until OPENAI_BASE_URL and "

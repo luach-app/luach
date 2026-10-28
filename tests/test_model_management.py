@@ -248,7 +248,8 @@ class TestManaging:
     @pytest.mark.parametrize(
         "bad",
         [
-            "anthropic:claude",
+            "qwen3::8b",
+            "qwen3:",
             "two words",
             "x" * 129,
             "",
@@ -563,7 +564,7 @@ class TestProbe:
         ok, why = await model_health.probe(CLOUD)
         assert not ok and "OPENAI_BASE_URL" in why
         monkeypatch.setenv("OPENAI_BASE_URL", "http://models.test/v1")
-        assert await model_health.probe("evil:model") == (False, "not a model id")
+        assert await model_health.probe("evil::model") == (False, "not a model id")
 
 
 # --- no model at all -------------------------------------------------------------------
@@ -724,6 +725,7 @@ OPENROUTER = {
             "supported_parameters": [],
         },
         {"id": "meta/x:free", "name": "has a colon"},
+        {"id": "meta/x::free", "name": "two colons"},
         {"id": "*", "name": "a wildcard"},
         {"id": 7},
         "junk",
@@ -769,6 +771,7 @@ class TestCatalogue:
             "openrouter/~deepseek/deepseek-flash-latest",
             "openrouter/google/gemini-3.8-flash",
             "openrouter/deepseek/deepseek-flash-0731",
+            "openrouter/meta/x:free",
         }
         alias = body["models"][0]
         assert alias["alias"] and alias["recommended"] and alias["context_length"] == 131072
@@ -1034,7 +1037,7 @@ class TestTryIt:
     async def test_only_a_model_on_the_list(self, owner, stand_in):
         r = await owner.post("/api/models/manage/trial", json={"id": "not/on-the-list"})
         assert r.status_code == 409 and "add the model" in r.text
-        r = await owner.post("/api/models/manage/trial", json={"id": "evil:model"})
+        r = await owner.post("/api/models/manage/trial", json={"id": "evil::model"})
         assert r.status_code == 400
 
     async def test_a_run_left_running_by_a_restart_is_closed(self, stand_in):
