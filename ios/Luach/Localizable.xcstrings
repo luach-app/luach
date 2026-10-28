@@ -1556,6 +1556,38 @@
         }
       }
     },
+    "Add to Calendar": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir a Calendario"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הוספה ליומן"
+          }
+        }
+      }
+    },
+    "Add to Calendar subscribes this iPhone. In Google Calendar on the web: Other calendars › + › From URL, and paste the link. luach keeps only a fingerprint of it, so this is the one time it is shown.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir a Calendario suscribe este iPhone. En Google Calendar en la web: Otros calendarios › + › Desde URL, y pega el enlace. luach guarda solo una huella de él, así que esta es la única vez que se muestra."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "„הוספה ליומן” מנוי את האייפון הזה. ב-Google Calendar באתר: יומנים אחרים › + › מכתובת URL, ולהדביק את הקישור. luach שומר רק טביעת אצבע שלו, ולכן זו הפעם היחידה שהוא מוצג."
+          }
+        }
+      }
+    },
     "Add “%@” by its id": {
       "localizations": {
         "es": {
@@ -1956,6 +1988,22 @@
         }
       }
     },
+    "Anyone with the link can read the calendar, so keep it like a password. Reset link makes a new one, and the old one stops working at once.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cualquiera con el enlace puede leer el calendario, así que guárdalo como una contraseña. Restablecer enlace crea uno nuevo, y el anterior deja de funcionar al instante."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "כל מי שיש לו את הקישור יכול לקרוא את היומן, לכן יש לשמור עליו כמו על סיסמה. „איפוס הקישור” יוצר קישור חדש, והישן מפסיק לעבוד מיד."
+          }
+        }
+      }
+    },
     "Approvals": {
       "localizations": {
         "es": {
@@ -2292,6 +2340,22 @@
         }
       }
     },
+    "Calendar feed": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario suscrito"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הזנת יומן"
+          }
+        }
+      }
+    },
     "Calendars": {
       "localizations": {
         "es": {
@@ -2304,6 +2368,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "יומנים"
+          }
+        }
+      }
+    },
+    "Calendars subscribed to it stop updating, and the link stops working.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los calendarios suscritos dejan de actualizarse, y el enlace deja de funcionar."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "יומנים שנרשמו אליו יפסיקו להתעדכן, והקישור יפסיק לעבוד."
+          }
+        }
+      }
+    },
+    "Calendars subscribed to the old link stop updating; add the new one to them.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los calendarios suscritos al enlace anterior dejan de actualizarse; añádeles el nuevo."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "יומנים שנרשמו לקישור הישן יפסיקו להתעדכן; יש להוסיף להם את החדש."
           }
         }
       }
@@ -3668,6 +3764,22 @@
         }
       }
     },
+    "Every event, with whom each one is for.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los eventos, con para quién es cada uno."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "כל האירועים, ועבור מי כל אחד מהם."
+          }
+        }
+      }
+    },
     "Every month": {
       "localizations": {
         "es": {
@@ -4823,6 +4935,22 @@
         }
       }
     },
+    "Last read by a calendar": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leído por última vez por un calendario"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נקרא לאחרונה על ידי יומן"
+          }
+        }
+      }
+    },
     "Last seen": {
       "localizations": {
         "es": {
@@ -5043,6 +5171,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "להפוך את %@ לברירת המחדל של הבית?"
+          }
+        }
+      }
+    },
+    "Make a new link?": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Crear un enlace nuevo?"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ליצור קישור חדש?"
           }
         }
       }
@@ -6119,6 +6263,22 @@
         }
       }
     },
+    "Only mine": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo lo mío"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "רק שלי"
+          }
+        }
+      }
+    },
     "Only the organizer can change this.": {
       "localizations": {
         "es": {
@@ -7039,6 +7199,22 @@
         }
       }
     },
+    "Reset link": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restablecer enlace"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "איפוס הקישור"
+          }
+        }
+      }
+    },
     "Reset your password": {
       "localizations": {
         "es": {
@@ -7499,6 +7675,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "הצגה ביומן"
+          }
+        }
+      }
+    },
+    "Show luach’s events in this iPhone’s own Calendar app, read-only. It holds a month back and a year ahead: titles, places, notes and whom each event is for. Never who is invited, nothing waiting for approval, and not your work calendar.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muestra los eventos de luach en la app Calendario de este iPhone, solo para leer. Abarca un mes atrás y un año adelante: títulos, lugares, notas y para quién es cada evento. Nunca a quién se invita, nada que espere aprobación, ni tu calendario del trabajo."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הצגת האירועים של luach באפליקציית היומן של האייפון הזה, לקריאה בלבד. היא כוללת חודש אחורה ושנה קדימה: כותרות, מקומות, הערות ועבור מי כל אירוע. אף פעם לא מי מוזמן, שום דבר שממתין לאישור, ולא יומן העבודה שלך."
           }
         }
       }
@@ -8015,6 +8207,22 @@
         }
       }
     },
+    "The events that are yours, and the ones that are everyone’s.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los eventos que son tuyos, y los que son de todos."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "האירועים שלך, ואלה של כולם."
+          }
+        }
+      }
+    },
     "The event’s title": {
       "localizations": {
         "es": {
@@ -8187,6 +8395,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "שם הקישור הוא החלק האחרון בכתובת שלמעלה: 2–40 אותיות לטיניות, ספרות ומקפים."
+          }
+        }
+      }
+    },
+    "The link was shown once, when it was made. To add it somewhere new, reset it.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El enlace se mostró una vez, al crearlo. Para añadirlo en otro sitio, restablécelo."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הקישור הוצג פעם אחת, כשנוצר. כדי להוסיף אותו במקום חדש, יש לאפס אותו."
           }
         }
       }
@@ -8379,6 +8603,22 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "The whole household": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todo el hogar"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "כל הבית"
           }
         }
       }
@@ -8927,6 +9167,22 @@
         }
       }
     },
+    "Turn the feed off?": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Desactivar el calendario suscrito?"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לכבות את הזנת היומן?"
+          }
+        }
+      }
+    },
     "Two hours before": {
       "localizations": {
         "es": {
@@ -9243,6 +9499,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "איך נראה מחר?"
+          }
+        }
+      }
+    },
+    "What it shows": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué muestra"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מה מוצג"
           }
         }
       }
@@ -10327,6 +10599,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "עדיין לא נראה"
+          }
+        }
+      }
+    },
+    "not yet": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "todavía no"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עדיין לא"
           }
         }
       }

@@ -7,6 +7,8 @@ enum Screen: String, CaseIterable, Identifiable {
     case tasks
     // You
     case profile, emails, mailbox, notify, memory
+    // Calendar feed
+    case calendarFeed
     // Household (owner)
     case members, household, models
     // Meetings
@@ -26,6 +28,7 @@ enum Screen: String, CaseIterable, Identifiable {
         case .mailbox: "Your Gmail"
         case .notify: "Also notify"
         case .memory: "What luach remembers"
+        case .calendarFeed: "Calendar feed"
         case .members: "Members"
         case .household: "Household"
         case .models: "Models"
@@ -47,6 +50,7 @@ enum Screen: String, CaseIterable, Identifiable {
         case .mailbox: "envelope.open"
         case .notify: "bell.badge"
         case .memory: "brain"
+        case .calendarFeed: "calendar.badge.checkmark"
         case .members: "person.2"
         case .household: "house"
         case .models: "cpu"
@@ -69,6 +73,7 @@ enum Screen: String, CaseIterable, Identifiable {
         case .mailbox: MailboxView()
         case .notify: NotifyEmailsView()
         case .memory: MemoryView()
+        case .calendarFeed: CalendarFeedView()
         case .members: MembersView()
         case .household: HouseholdView()
         case .models: HouseholdModelsView()
