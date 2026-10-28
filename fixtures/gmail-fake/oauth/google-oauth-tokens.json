@@ -1,0 +1,5 @@
+{
+  "refresh_token": "fixture-refresh-token-not-a-real-credential",
+  "token_uri": "http://gmail-fake:8080/token",
+  "scopes": ["https://www.googleapis.com/auth/gmail.modify"]
+}

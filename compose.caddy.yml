@@ -1,0 +1,33 @@
+# HTTPS in front of luach, for a machine with no reverse proxy of its own. Caddy answers on
+# ports 80 and 443 for the address in LUACH_APP_URL, gets a certificate for it from Let's
+# Encrypt and renews it by itself. The site is in ./Caddyfile.
+#
+# Before you start it: LUACH_APP_URL in .env is your https:// address, that name's DNS
+# points at this machine, and ports 80 and 443 reach it from the internet. Then add this
+# file to COMPOSE_FILE in .env (docker-compose.yml:compose.caddy.yml) and
+# `docker compose up -d`. docs/SELF-HOSTING.md, step 5.
+#
+# Caddy reaches luach from its own address on the subnet docker-compose.yml pins, which
+# LUACH_TRUSTED_PROXIES in .env trusts: that is what lets luach see each member's real
+# address behind it.
+
+services:
+  caddy:
+    image: caddy:2.11.7
+    restart: unless-stopped
+    depends_on: [luach]
+    environment:
+      LUACH_APP_URL: ${LUACH_APP_URL:?set LUACH_APP_URL in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # The certificates and Caddy's account: keep them, or Let's Encrypt is asked again.
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

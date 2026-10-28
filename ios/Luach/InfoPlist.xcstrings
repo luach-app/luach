@@ -1,0 +1,43 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "CFBundleDisplayName": {
+      "shouldTranslate": false
+    },
+    "NSLocalNetworkUsageDescription": {
+      "comment": "Privacy - Local Network Usage Description",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "luach se conecta al servidor luach de tu hogar, que puede estar en tu red doméstica."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "luach מתחבר לשרת ה-luach של הבית שלך, שייתכן שנמצא ברשת הביתית."
+          }
+        }
+      }
+    },
+    "NSMicrophoneUsageDescription": {
+      "comment": "Privacy - Microphone Usage Description",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "luach escucha mientras mantienes pulsado el micrófono, para que puedas decir qué añadir al calendario."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "luach מקשיב כל עוד לוחצים על המיקרופון, כדי שאפשר יהיה לומר מה להוסיף ליומן."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

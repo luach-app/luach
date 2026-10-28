@@ -1,0 +1,10 @@
+# luach behind Caddy (compose.caddy.yml). The site's address is LUACH_APP_URL from .env,
+# for example https://calendar.example.com, so there is nothing to edit here.
+#
+# Caddy passes the browser's Host on and sets X-Forwarded-For, X-Forwarded-Proto and
+# X-Forwarded-Host itself, replacing any a client sent. It sends the assistant's streamed
+# replies (text/event-stream) as they come, and puts no limit on a voice recording's size.
+
+{$LUACH_APP_URL} {
+	reverse_proxy luach:8004
+}

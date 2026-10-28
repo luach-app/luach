@@ -1,0 +1,13 @@
+# Only what the image builds from. Keeps node_modules, local builds, databases,
+# checkpoints and any credential file out of the build context.
+*
+!pyproject.toml
+!requirements.lock
+!README.md
+!src/
+!web/
+web/node_modules
+web/dist
+**/__pycache__
+**/*.db
+**/*.env

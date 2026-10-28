@@ -1,0 +1,69 @@
+<!doctype html>
+<!-- The server fills in each double-braced name from its settings (luach.public_pages). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>luach · {{household_calendar}}</title>
+<meta name="description" content="luach is {{household_described}}, run by an assistant that turns what people say into events.">
+<link rel="icon" href="/icon-192.png">
+<style>
+  :root { --bg:#f7f5fb; --surface:#fff; --text:#1c1a26; --muted:#6b6680; --accent:#d39a1a; --accent-text:#8a5f00; --line:rgba(28,26,38,.1); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f0e14; --surface:#1a1826; --text:#ece9f4; --muted:#8f8aa3; --accent:#f4b942; --accent-text:#f4b942; --line:rgba(236,233,244,.1); } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 -apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 40px 16px 64px; }
+  header { display:flex; align-items:center; gap:14px; margin-bottom: 28px; }
+  header img { width:52px; height:52px; border-radius:14px; }
+  .word { font-size:28px; font-weight:800; }
+  .word small { font-size:12px; letter-spacing:3px; color:var(--muted); font-weight:600; margin-left:8px; }
+  h1 { font-size: 30px; line-height:1.25; margin: 0 0 12px; }
+  h2 { font-size: 19px; margin: 32px 0 8px; }
+  p, li { color: var(--text); }
+  .lead { font-size:18px; color:var(--muted); }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:18px; padding: 4px 20px; margin-top: 20px; }
+  ul { padding-left: 20px; }
+  a { color: var(--accent-text); }
+  .actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
+  .btn { display:inline-block; padding:12px 20px; border-radius:12px; background:var(--accent); color:#1a1400; font-weight:700; text-decoration:none; }
+  .btn.ghost { background:transparent; color:var(--text); border:1px solid var(--line); }
+  footer { margin-top:40px; font-size:14px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="/icon-192.png" alt="">
+    <div class="word"><span lang="he" dir="rtl">לוח</span><small>LUACH</small></div>
+  </header>
+
+  <h1>{{household_title}}</h1>
+  <p class="lead">luach (Hebrew for "board") is a private family calendar. Instead of opening a calendar app, the people in the household tell luach what is happening — "dentist next Tuesday at three" — by typing, by voice, or by forwarding an email, and luach puts it on the one shared calendar.</p>
+
+  <div class="actions">
+    <a class="btn" href="/">Sign in</a>
+    <a class="btn ghost" href="/privacy">Privacy policy</a>
+  </div>
+
+  <div class="card">
+    <h2>What it does</h2>
+    <ul>
+      <li><strong>Keeps one shared calendar</strong> for the household, in Google Calendar, with an agenda, a touch board for the kitchen and a list of tasks and chores.</li>
+      <li><strong>Turns words into events.</strong> An assistant reads what someone said and proposes the event. Anything it is unsure of — a vague time, something in the past, a possible duplicate, a change to someone else's event — waits for a person to approve it.</li>
+      <li><strong>Reminds people</strong> before things start, the evening before, and once a week.</li>
+      <li><strong>Lets people book a meeting</strong> with a member through a booking link that only offers times when the household is free.</li>
+      <li><strong>Optionally reads a member's own Gmail, read-only.</strong> A member who connects their Gmail can ask the assistant about their mail ("when is our flight?"), and can turn on a scan that reads new mail and proposes appointments it finds — a dentist's reminder, a flight, a school trip. Nothing is added until that member says yes, and no one else in the household can see or search their mail.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Who it is for</h2>
+    <p>luach is not a public service. {{who_runs_it}}, and accounts exist only by invitation from the household's owner.</p>
+  </div>
+
+  <footer>
+    <a href="/privacy">Privacy policy</a>{{contact_footer}}
+  </footer>
+</main>
+</body>
+</html>

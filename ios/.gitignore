@@ -1,0 +1,5 @@
+build/
+xcuserdata/
+*.xcuserstate
+# Each person's own hosts and paths for the scripts (ios/README.md, "Settings").
+scripts/local.env

@@ -1,0 +1,19 @@
+# Web search for luach: a private SearXNG that only luach asks. docs/SELF-HOSTING.md,
+# "Web search".
+#
+#   cp searxng/settings.example.yml searxng/settings.yml
+#   # in .env: SEARXNG_SECRET=<openssl rand -hex 32>  and  LUACH_SEARCH_URL=http://searxng:8080
+#   # and add compose.search.yml to COMPOSE_FILE
+#   docker compose up -d
+#
+# It publishes no port: luach reaches it on the compose network as http://searxng:8080.
+
+services:
+  searxng:
+    image: searxng/searxng:2026.8.22-9fea41204
+    restart: unless-stopped
+    environment:
+      # SearXNG will not start on the secret its own settings ship with.
+      SEARXNG_SECRET: ${SEARXNG_SECRET:?set SEARXNG_SECRET in .env (openssl rand -hex 32)}
+    volumes:
+      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro

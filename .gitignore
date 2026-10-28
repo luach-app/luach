@@ -1,0 +1,29 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.db
+*.db-*
+.env
+.envrc
+.tulip_checkpoints/
+web/node_modules/
+web/dist/
+web/playwright-report/
+web/test-results/
+web/tsconfig.tsbuildinfo
+
+# Local editor/agent session state, and the iPhone scripts' own hosts and paths (also in ios/.gitignore).
+.claude/
+ios/scripts/local.env
+
+# Self-hosting: SearXNG settings with your own keys (copied from searxng/settings.example.yml),
+# Google key files, and backups.
+searxng/settings.yml
+credentials/
+backups/

@@ -1,0 +1,46 @@
+{
+  // Dependency updates, for when the Renovate app is installed on this repository; without it
+  // this file does nothing. A week after an upstream release, on Mondays, every non-major update
+  // in one pull request that merges itself once CI is green. Majors, and a new Python or Node
+  // (a new runtime, not a minor), open as drafts and wait for a person. Actions stay pinned to a
+  // commit, with the release in a comment beside it.
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  enabledManagers: ["npm", "dockerfile", "github-actions", "pep621", "pip-compile"],
+  // The lock files the image and CI install (scripts/lock.sh writes them).
+  "pip-compile": {managerFilePatterns: ["/(^|/)requirements[^/]*\\.lock$/"]},
+  dependencyDashboard: false,
+  schedule: ["* * * * 1"],
+  minimumReleaseAge: "7 days",
+  prConcurrentLimit: 3,
+  prHourlyLimit: 0,
+  platformAutomerge: false,
+  rangeStrategy: "update-lockfile",
+  pinDigests: true,
+  lockFileMaintenance: {enabled: true, schedule: ["* * * * 1"], automerge: true},
+  packageRules: [
+    {
+      description: "Everything that is not a major: one pull request a week, merged once CI passes.",
+      matchUpdateTypes: ["minor", "patch", "digest", "pin", "pinDigest"],
+      groupName: "non-major dependencies",
+      groupSlug: "non-major",
+      automerge: true,
+    },
+    {
+      description: "Majors wait for a person.",
+      matchUpdateTypes: ["major"],
+      automerge: false,
+      labels: ["major upgrade"],
+      draftPR: true,
+    },
+    {
+      description: "A new Python or Node is a new runtime, not a minor: its own pull request, waiting for a person. Digests of the same version still merge with the group.",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/(^|/)python$/", "/(^|/)node$/"],
+      matchUpdateTypes: ["minor", "major"],
+      groupName: null,
+      automerge: false,
+      labels: ["runtime upgrade"],
+      draftPR: true,
+    },
+  ],
+}

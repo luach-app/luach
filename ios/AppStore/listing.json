@@ -1,0 +1,42 @@
+{
+  "_about": "luach's App Store listing, applied with `python3 ios/scripts/asc.py listing` on the Mac. It fills the listing and never submits. The copyright, the review contact and the server the notes name ({server}) are the publisher's: asc.py takes them from ~/.appstoreconnect/luach.env (ios/README.md).",
+  "locale": "en-US",
+  "subtitle": "Family calendar you talk to",
+  "privacyPolicyUrl": "https://luach-app.github.io/privacy/",
+  "supportUrl": "https://luach-app.github.io/",
+  "marketingUrl": "https://luach-app.github.io/",
+  "primaryCategory": "PRODUCTIVITY",
+  "secondaryCategory": "LIFESTYLE",
+  "keywords": "family,calendar,household,agenda,assistant,schedule,tasks,chores,planner,shared,voice",
+  "promotionalText": "Say “dentist next Tuesday at three” and it is on the family calendar. Now in English, Spanish and Hebrew.",
+  "description": "luach is a family calendar you can talk to.\n\nSay “dentist next Tuesday at three” — by typing or with the mic — and luach puts it on your household’s shared calendar. Ask “is Saturday free?” or “what does tomorrow look like?” and it answers from the calendar.\n\n• Agenda: the week ahead and the month, every event in the colour of the person it is for.\n• Board: each person’s day — events and tasks — to tick off together.\n• Ask: plain words in, calendar changes out, with the steps it took shown underneath.\n• Approvals: when luach is not sure — a guessed time, a likely duplicate, a change to someone else’s event — it waits for a yes.\n• Your Gmail, if you connect it: ask about your mail (“when is our flight?”) and have luach add what it finds. Read-only, and only your own mailbox.\n• Booking page, reminders, busy calendars, and the family’s colours.\n\nluach runs on your household’s own server: free, open-source software that a family installs for itself (luach-app.github.io). The app talks only to that server, and nothing goes to the app’s makers. The assistant uses the model your server is set up with, which can be one that runs at home; a cloud model is used only if you choose one, after the app asks.\n\nYou sign in with the account your household’s luach gave you. It speaks English, Spanish and Hebrew.",
+  "ageRating": {
+    "advertising": false,
+    "ageAssurance": false,
+    "gambling": false,
+    "lootBox": false,
+    "healthOrWellnessTopics": false,
+    "messagingAndChat": false,
+    "parentalControls": false,
+    "socialMedia": false,
+    "socialMediaAgeRestricted": false,
+    "unrestrictedWebAccess": false,
+    "userGeneratedContent": false,
+    "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+    "contests": "NONE",
+    "gamblingSimulated": "NONE",
+    "gunsOrOtherWeapons": "NONE",
+    "horrorOrFearThemes": "NONE",
+    "matureOrSuggestiveThemes": "NONE",
+    "medicalOrTreatmentInformation": "NONE",
+    "profanityOrCrudeHumor": "NONE",
+    "sexualContentGraphicAndNudity": "NONE",
+    "sexualContentOrNudity": "NONE",
+    "violenceCartoonOrFantasy": "NONE",
+    "violenceRealistic": "NONE",
+    "violenceRealisticProlongedGraphicOrSadistic": "NONE"
+  },
+  "review": {
+    "notes": "luach is the app for a self-hosted, open-source household calendar: each family runs its own luach server (https://luach-app.github.io), and a member signs in with an account that household's owner invited them to.\n\nFor review, please use our test server so nothing touches a real family's calendar:\n1. On the sign-in screen, enter this address: {server}\n2. Sign in with the demo account below.\n\nThe assistant (Ask) uses the model the server is set up with. Choosing a cloud model (Settings › Profile) first asks the user's consent and says what is sent where. The microphone is used only while the mic button is held, to transcribe a request on the household's server.\n\nConnecting Gmail is optional; the test server uses a stand-in mailbox, so Google's consent page is not part of review.\n\nReminders appear as local notifications the app schedules from the household's calendar; iOS asks for permission when a reminder is turned on in Settings › Reminders, not at launch. There is no remote push.\n\nAccount deletion: Settings › Security › Delete account deletes the signed-in member's account on that household's server after the password is typed again. Deleting the demo account is real and permanent; if you try it, please tell us in your reply so we can make the account again for the next review. A household's owner can delete their own account only once the other members are removed."
+  }
+}

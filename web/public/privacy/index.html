@@ -1,0 +1,86 @@
+<!doctype html>
+<!-- The server fills in each double-braced name from its settings (luach.public_pages). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>luach · privacy policy</title>
+<meta name="description" content="What luach, {{household_calendar}}, collects, how it uses Google user data, and how to have it deleted.">
+<link rel="icon" href="/icon-192.png">
+<style>
+  :root { --bg:#f7f5fb; --surface:#fff; --text:#1c1a26; --muted:#6b6680; --accent-text:#8a5f00; --line:rgba(28,26,38,.1); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f0e14; --surface:#1a1826; --text:#ece9f4; --muted:#8f8aa3; --accent-text:#f4b942; --line:rgba(236,233,244,.1); } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.65 -apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 30px; line-height:1.25; margin: 0 0 6px; }
+  h2 { font-size: 19px; margin: 34px 0 8px; }
+  .muted { color: var(--muted); }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding: 4px 20px; margin: 18px 0; }
+  ul { padding-left: 20px; }
+  li { margin: 4px 0; }
+  a { color: var(--accent-text); }
+  footer { margin-top:40px; font-size:14px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <p><a href="/about">← luach</a></p>
+  <h1>Privacy policy</h1>
+  <p class="muted">luach, {{household_calendar}}{{site}} · last updated 30 September 2026</p>
+
+  <p>luach is a private calendar for one household, run by {{operator}}. It is not offered to the public: accounts exist only by invitation from the household's owner. This page says what luach collects, what it does with it, and how to have it removed.</p>
+
+  <h2>What luach keeps about you</h2>
+  <ul>
+    <li><strong>Your account:</strong> username, display name, the email addresses you add (each confirmed by you), your time zone and language, a hashed password and any passkeys.</li>
+    <li><strong>The household calendar:</strong> events and tasks the household adds, kept in the household's Google Calendar and in luach's own database.</li>
+    <li><strong>Your conversations with the assistant:</strong> what you asked and what it answered. They are yours alone — no other member can read them — and each is deleted after it has not been used for 60 days, or straight away when you delete it.</li>
+    <li><strong>Things you ask it to remember</strong> ("I only book mornings"), which you can see and delete in Settings.</li>
+    <li><strong>An audit trail</strong> of changes to the calendar (who added, changed or approved what), readable by the household's owner.</li>
+  </ul>
+
+  <h2>Google user data: Gmail</h2>
+  <div class="card">
+    <p>Connecting Gmail is optional and each member does it for themselves. luach asks Google for one permission only: <strong>read-only access to your Gmail</strong> (<code>gmail.readonly</code>). It cannot send, delete, label or change your mail.</p>
+    <p><strong>What it is used for</strong> — and nothing else:</p>
+    <ul>
+      <li>Answering questions you ask in the chat about your own email, such as "when is our flight?", by searching and reading the messages that answer them.</li>
+      <li>If you turn on <em>Look through new mail for things to add</em>: reading mail that arrives after you turned it on (not promotions or social mail) to find appointments, bookings and dates, and proposing them to you as calendar events. Nothing is added until you approve it.</li>
+    </ul>
+    <p><strong>What is stored:</strong> the access Google grants, encrypted at rest; for each message the scan has read, its Gmail message id and whether anything was found, so it is not read twice; for each proposal, the email's subject, sender and date shown beside it. Text the assistant reads from a message becomes part of that conversation and is deleted with it, as above.</p>
+    <p><strong>Who can see it:</strong> only you. No other member of the household can search your mail, read what the assistant found in it, or see your proposals.</p>
+    <p><strong>Limited Use.</strong> luach's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements. Your Gmail data is used only to provide the features above to you; it is not sold, not used for advertising, not used to train AI models, and not read by any person unless you ask for help with something specific, it is needed for security, or the law requires it.</p>
+  </div>
+
+  <h2>The assistant and the AI model</h2>
+  <p>{{models}}</p>
+
+  <h2>The iPhone app</h2>
+  <p>The iPhone app talks only to luach's own server. On the phone it keeps your sign-in and a few settings (which conversation was open, how you like the agenda shown). The microphone is used only while you hold its button: the recording goes to luach's own speech-to-text on the household's server, comes back as text for you to read before sending, and is not kept. Before you choose a cloud model in the app, it asks you first and says what would be sent where. The app shows no ads, has no analytics and tracks nothing.</p>
+
+  <h2>Who else receives data</h2>
+  <ul>
+    <li><strong>Google</strong>, for the household calendar and, if you connect it, your Gmail.</li>
+    <li><strong>Resend</strong>, which delivers the emails luach sends (invitations, confirmations, reminders).</li>
+    <li><strong>The AI provider you chose</strong>, if you chose a cloud model.</li>
+  </ul>
+  <p>luach does not sell data, show advertising, or share data with anyone else.</p>
+
+  <h2>Where it is kept and how it is protected</h2>
+  <p>luach runs on the household's own server. Connections to it are encrypted (HTTPS), mail access grants are encrypted at rest with a key kept apart from the database, and every change to the calendar is recorded on a tamper-evident audit trail.</p>
+
+  <h2>Removing your data</h2>
+  <ul>
+    <li><strong>Gmail:</strong> Settings › Your Gmail › <em>Disconnect</em> deletes the stored access and revokes it at Google; the scan stops with it. You can also revoke it at any time at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
+    <li><strong>Conversations and remembered facts:</strong> delete them yourself in the app.</li>
+    <li><strong>Your whole account:</strong> {{delete_account}} and it will be deleted, along with everything above.</li>
+  </ul>
+
+  <h2>Contact</h2>
+  <p>Questions about this policy or your data: {{contact}}.</p>
+
+  <footer><a href="/about">About luach</a> · <a href="/">Sign in</a></footer>
+</main>
+</body>
+</html>

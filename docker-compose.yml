@@ -1,0 +1,82 @@
+# luach for one household: Postgres with pgvector, the schema migration, and the app.
+#
+#   cp .env.example .env      # then fill in at least the "Required" group
+#   docker compose up -d
+#
+# The app listens on 127.0.0.1:8004. Put an HTTPS reverse proxy in front of it before
+# anyone else uses it: compose.caddy.yml is a ready one (docs/SELF-HOSTING.md, step 5).
+# Settings come from .env; the database URL and the memory DSN are set here, from
+# POSTGRES_PASSWORD.
+#
+# The image is the published one, ghcr.io/luach-app/luach. LUACH_VERSION in .env picks the
+# tag: main (the default) is the latest build, a commit's short sha pins one. To build the
+# image from this checkout instead, add compose.build.yml to COMPOSE_FILE in .env.
+
+x-luach: &luach
+  image: ghcr.io/luach-app/luach:${LUACH_VERSION:-main}
+  env_file: .env
+  environment:
+    # The password is read from .env; nothing secret is written here (ggignore marks that for scanners).
+    LUACH_DATABASE_URL: postgresql://luach:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/luach  # ggignore
+    LUACH_MEMORY_DSN: postgresql://luach:${POSTGRES_PASSWORD}@db:5432/luach  # ggignore
+  # Lets the container reach a model server running on this machine as
+  # http://host.docker.internal:<port>/v1.
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+services:
+  db:
+    image: pgvector/pgvector:0.8.0-pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: luach
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}  # ggignore
+      POSTGRES_DB: luach
+      POSTGRES_INITDB_ARGS: --locale=C --encoding=UTF8
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "luach", "-d", "luach"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # Brings the database to the schema this build expects, then exits. The app refuses
+  # to start on a schema it does not know, so this runs before it on every `up`.
+  migrate:
+    <<: *luach
+    command: ["luach-migrate"]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  luach:
+    <<: *luach
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      # The mail key, the agent's conversation checkpoints and the loops' lock.
+      - state:/var/lib/luach
+      # Google key files, if you use them: put them in ./credentials, readable by
+      # uid 10001, and point LUACH_GOOGLE_* at /run/luach/<file> in .env.
+      # - ./credentials:/run/luach:ro
+    ports:
+      - "127.0.0.1:8004:8004"
+
+volumes:
+  db:
+  state:
+
+# A fixed subnet for this project's network, so the address a reverse proxy reaches luach
+# from is known in advance and stays the same after a `docker compose down`: the gateway,
+# 172.31.208.1, for a proxy on the host; its own address on this subnet for the caddy
+# service in compose.caddy.yml. LUACH_TRUSTED_PROXIES in .env trusts this subnet. If `up`
+# says the pool overlaps another network, pick another private /24 here and there.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.31.208.0/24

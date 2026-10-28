@@ -1,0 +1,16 @@
+# Build luach's image from this checkout instead of pulling the published one: on a machine
+# the published image does not run on (it is built for x86-64), or to run changes of your own.
+#
+#   docker compose -f docker-compose.yml -f compose.build.yml up -d --build
+#
+# or add it to COMPOSE_FILE in .env (docker-compose.yml:compose.build.yml) and use
+# `docker compose up -d --build` as usual. The build takes a few minutes and about 2 GB of
+# memory; after a `git pull`, `--build` builds the new version.
+
+services:
+  migrate:
+    build: .
+    image: luach:local
+  luach:
+    build: .
+    image: luach:local

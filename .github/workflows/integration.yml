@@ -1,0 +1,93 @@
+name: integration
+
+# The luach image started the way a hardened deployment runs it (non-root, read-only root, the
+# state volume), first on its own -- it boots with an empty state volume, serves the PWA and
+# /api/health, and refuses a protected route without a session -- then with the fake calendar and
+# a fake model, driven end to end over HTTP (ci/integration).
+#
+# Called by ci.yml on main with the image it just published, so it tests the exact bytes a
+# deployment pulls and not a rebuild. On a pull request that touches the image it runs as early
+# warning, building from the checkout: not a required check, so a red run is a reason to look and
+# the merge is the author's call.
+on:
+  pull_request:
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "requirements.lock"
+      - "ci/integration/**"
+      - ".github/workflows/integration.yml"
+  workflow_call:
+    inputs:
+      ref:
+        description: "the commit to test (default: the caller's)"
+        type: string
+        default: ""
+      tag:
+        description: "test ghcr.io/<owner>/luach:<tag> instead of building"
+        type: string
+        default: ""
+  workflow_dispatch:
+
+# A second push to a pull request supersedes the first. Called from ci.yml, the run is its
+# caller's to cancel, so each call gets a group of its own.
+concurrency:
+  group: integration-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions: {contents: read, packages: read}
+
+jobs:
+  integration:
+    name: integration (image, end to end)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - name: the published image
+        if: inputs.tag != ''
+        env:
+          TAG: ${{ inputs.tag }}
+          OWNER: ${{ github.repository_owner }}
+          TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          # Signed in, so a package that is not public yet can still be pulled.
+          echo "$TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+          image="ghcr.io/${OWNER,,}/luach:$TAG"
+          docker pull -q "$image"
+          echo "IMAGE=$image" >> "$GITHUB_ENV"
+      - name: build
+        if: inputs.tag == ''
+        run: |
+          docker build -t luach:ci .
+          echo "IMAGE=luach:ci" >> "$GITHUB_ENV"
+      - name: boots as non-root, health and PWA open, protected routes closed
+        run: |
+          set -euo pipefail
+          docker network create luach-boot >/dev/null
+          ci/integration/postgres.sh luach-boot "$IMAGE"
+          docker run -d --name luach-boot --network luach-boot -p 127.0.0.1:8004:8004 --read-only \
+            --mount type=tmpfs,destination=/tmp \
+            --mount type=tmpfs,destination=/var/lib/luach,tmpfs-mode=1777 \
+            -e LUACH_DATABASE_URL=postgresql://luach@luach-db:5432/luach \
+            "$IMAGE"
+          trap 'docker logs luach-boot; docker rm -f luach-boot luach-db >/dev/null; docker network rm luach-boot >/dev/null' EXIT
+          for _ in $(seq 60); do
+            curl -fsS http://127.0.0.1:8004/api/health && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8004/api/health
+          test "$(docker exec luach-boot id -u)" = 10001
+          curl -fsS http://127.0.0.1:8004/ | grep -q 'id="root"'
+          code="$(curl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:8004/api/transcribe)"
+          case "$code" in 401|403) echo "ok: POST /api/transcribe without a session -> $code" ;;
+            *) echo "POST /api/transcribe without a session returned $code"; exit 1 ;; esac
+      - name: API end to end
+        run: |
+          python3 -m pip install --quiet pytest httpx
+          bash ci/integration/run.sh

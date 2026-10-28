@@ -1,0 +1,39 @@
+# SearXNG for luach (compose.search.yml). Copy it to searxng/settings.yml, which git ignores,
+# so a key you put in it stays out of the repository:
+#
+#   cp searxng/settings.example.yml searxng/settings.yml
+#
+# Everything not set here is SearXNG's own default. Its documentation:
+# https://docs.searxng.org/admin/settings/index.html
+
+use_default_settings: true
+
+server:
+  # The secret comes from SEARXNG_SECRET in .env, which replaces SearXNG's default.
+  # Only luach asks this instance, over the compose network: nothing to rate-limit.
+  limiter: false
+  image_proxy: false
+  public_instance: false
+
+search:
+  safe_search: 1
+  # luach asks for JSON (<LUACH_SEARCH_URL>/search?format=json); without it every search fails.
+  formats: [html, json]
+
+# luach reads the six results SearXNG scores highest, so these weights decide what the model
+# sees. A result's score is its engine's weight over its position, summed across engines.
+engines:
+  # Bing reads many queries by their first word ("Museum of the Moving Image address" found
+  # museums elsewhere). It is off in SearXNG's defaults; if you turn it on, keep it low.
+  - name: bing
+    weight: 0.25
+
+  # Brave's Search API gave the best answers to a family's questions: weighted 4 against
+  # Bing's 0.25, it took a set of real questions from 0 of 6 answered to 5 of 6. It needs a
+  # key: make an account at https://brave.com/search/api/ (see their plans and prices),
+  # create a key, and uncomment these lines with it.
+  #
+  # - name: braveapi
+  #   api_key: "paste-your-brave-search-api-key-here"
+  #   inactive: false
+  #   weight: 4

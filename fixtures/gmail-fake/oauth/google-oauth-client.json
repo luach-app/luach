@@ -1,0 +1,5 @@
+{
+  "client_id": "fixture-client.apps.googleusercontent.invalid",
+  "client_secret": "fixture-secret-not-a-real-credential",
+  "redirect_uris": ["http://localhost"]
+}
