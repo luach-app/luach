@@ -1,32 +1,129 @@
-# luach · לוח
+<p align="center"><img src="web/public/icon-192.png" width="96" height="96" alt=""></p>
 
-**A household calendar run by a governed agent, for a family to host itself.**
+<h1 align="center">luach · לוח</h1>
+
+<p align="center"><b>A family calendar you can talk to, run by a governed agent, on your family's own server.</b></p>
+
+<p align="center">
+  <a href="https://github.com/luach-app/luach/actions/workflows/ci.yml"><img src="https://github.com/luach-app/luach/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-blue" alt="License: AGPL-3.0-or-later"></a>
+  <a href="docs/SELF-HOSTING.md"><img src="https://img.shields.io/badge/self--hosted-Docker-2496ED" alt="Self-hosted with Docker"></a>
+  <a href="https://luach-app.github.io"><img src="https://img.shields.io/badge/site-luach--app.github.io-c98a12" alt="Website"></a>
+</p>
+
+<p align="center">
+  <a href="docs/SELF-HOSTING.md"><b>Run your own</b></a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#what-makes-it-governed">Governance</a> ·
+  <a href="#development">Development</a> ·
+  <a href="https://luach-app.github.io">Website</a>
+</p>
 
 luach (Hebrew for "board", as in the one on the kitchen wall) keeps one family's calendar.
 The people in it would rather say "dentist next Tuesday at three" than open a calendar app,
 so they say it: typed or spoken in the app, forwarded in an email, or tapped on a screen in
-the kitchen. A language model turns those words into calendar changes, and nothing it
-proposes reaches the calendar without passing an admission gate written in code.
+the kitchen. A language model turns those words into calendar changes, and **nothing it
+proposes reaches the calendar without passing an admission gate written in code**.
 
 Each family runs its own server. There is no hosted service: the calendar, the
 conversations and the audit trail stay on a machine the family controls, and the model can
 be one it runs too.
 
+<p align="center">
+  <img src="docs/images/agenda.jpg" width="19%" alt="Agenda: the week, in each person's colour">
+  <img src="docs/images/board.jpg" width="19%" alt="Board: each person's day, chores included">
+  <img src="docs/images/ask.jpg" width="19%" alt="Ask: a question about the week, answered from the calendar">
+  <img src="docs/images/month.jpg" width="19%" alt="Month at a glance">
+  <img src="docs/images/approvals.jpg" width="19%" alt="Approvals: changes waiting for a yes">
+</p>
+<p align="center"><sub>The iPhone app with a made-up family. Agenda · Board · Ask · Month · Approvals.</sub></p>
+
+## How it works
+
+```mermaid
+flowchart LR
+    subgraph doors["Ways in"]
+        web["Web app<br/>text · mic"]
+        ios["iPhone app"]
+        board["Kitchen board"]
+        mail["Email<br/>forwarded or scanned"]
+    end
+    doors --> agent["Agent<br/>(tulip-agents)"]
+    agent -->|"reads"| tools["Calendar · tasks · memory<br/>web search · email"]
+    agent -->|"proposes a write"| gate{"Admission gate<br/>(code, not prompt)"}
+    gate -->|"clear"| cal[("The calendar")]
+    gate -->|"unsure"| held["Held: a card with<br/>Approve / Deny"]
+    gate -->|"never"| denied["Denied"]
+    held -->|"a person approves"| cal
+    gate -.->|"every decision"| audit[("Hash-chained<br/>audit trail")]
 ```
-  Web app (text / mic) ───────────────┐
-  iPhone app ─────────────────────────┤
-  Forwarded email (Gmail label) ──────┤
-  Wall board ─────────────────────────┤
-                                      ▼
-                       agent + calendar tools
-                                      │
-                  create / update / delete ──▶ admit()
-                                      │
-            ┌──── allowed ────────────┴──────── held ────┐
-            ▼                                            ▼
-    the calendar                               a pending action
-    (recorded on the audit trail)        Approve / Deny in the app
+
+A clear request ("swimming for Lily every Thursday at 5:30") goes straight on the calendar.
+Anything the gate is unsure of waits as a card for a person:
+
+```mermaid
+sequenceDiagram
+    actor Robin
+    participant App as App
+    participant Agent as Agent
+    participant Gate as Admission gate
+    participant Cal as Calendar
+    Robin->>App: "Move soccer to Thursday"
+    App->>Agent: the words, the thread, today's date and the family
+    Agent->>Gate: update_event(soccer, Thursday 17:00)
+    Gate-->>Agent: held: mutation-existing (Ruby's event, not made in this chat)
+    Agent-->>App: "That's Ruby's practice, it needs a yes."
+    App-->>Robin: card: Move "Soccer" to Thu 17:00 · Approve / Deny
+    Robin->>App: taps Approve
+    App->>Gate: approve this exact call
+    Gate->>Cal: update_event(soccer, Thursday 17:00)
+    Gate-->>App: done, and recorded on the audit trail
 ```
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph clients["Clients"]
+        direction LR
+        web["Web app<br/>React · installable"]
+        ios["iPhone app<br/>SwiftUI"]
+        kiosk["Wall board<br/>/board, paired by code"]
+    end
+    subgraph server["luach server · one container (FastAPI)"]
+        direction TB
+        api["HTTP API · sign-in · sessions<br/>passkeys · SSO"]
+        rt["Agent runtime<br/>tulip-agents · history · skills"]
+        gate["Admission gate<br/>labels · holds · approvals"]
+        doors["Email door · mail scan<br/>reminders · booking"]
+    end
+    subgraph data["Your data · Postgres 16 + pgvector"]
+        direction LR
+        store[("Events, members, tasks<br/>threads, holds")]
+        mem[("Memory<br/>per-member facts")]
+        trail[("Audit chain")]
+    end
+    subgraph outside["Services you choose"]
+        direction LR
+        llm["Model<br/>any OpenAI-compatible endpoint"]
+        gcal["Google Calendar<br/>optional"]
+        gmail["Gmail<br/>optional"]
+        extra["Search · voice · mail · push<br/>optional"]
+    end
+    clients -->|https| api
+    api --> rt --> gate
+    doors --> rt
+    rt --> mem
+    gate --> store
+    gate --> trail
+    rt --> llm
+    gate --> gcal
+    doors --> gmail
+    rt --> extra
+```
+
+Everything in the middle runs on the family's machine. Each box on the right is the
+family's own choice and its own account: a model at home means nothing leaves the house.
 
 ## What makes it governed
 
@@ -38,17 +135,21 @@ weighed as an action whose labels come from its arguments and from the calendar 
 |---|---|---|
 | `ambiguous` | the model inferred the date or time (`certainty="low"`) | held |
 | `past` | the start is already behind us | held |
-| `possible-duplicate` | a similar title sits within a day | held |
-| `mutation-existing` | changing or deleting an event this conversation did not create | held |
-| `bulk` | more than one event per call | denied |
+| `possible-duplicate` | a look-alike sits on the same day, not one this conversation just made | held |
+| `mutation-existing` | changing or deleting an event (or task) this conversation did not create | held |
+| `from-your-email` | the email scan found it in a member's mail | held for that member |
+| `outside-the-house` | an invitation would reach anyone outside the household | held, and only a tap clears it |
+| `already-there`, `already-proposed`, `incomplete`, `midnight-unsaid` | a repeat of what exists or waits, a write missing what it needs, or a midnight nobody said | denied |
 
-A person's explicit "yes" in the same turn, or a tap on Approve, clears a hold. Approval runs
-the exact call that was proposed, on a path the model cannot reach, and is recorded too.
-Every decision lands on a hash-chained audit trail; `GET /api/control/audit` returns the
-chain with `chain_verified`, and the server checks the chain at every start.
+A tap on Approve runs the exact call that was proposed, on a path the model cannot reach, and
+is recorded too. A typed "yes" approves the cards the person was just shown, and nothing else
+in that turn; after "shall I add it?" it also settles the doubt of that one new event. Nothing
+a turn says clears `outside-the-house`. Every decision lands on a hash-chained audit trail:
+`GET /api/control/audit` returns the chain with `chain_verified`, the server checks it at every
+start, and each member sees their own part of it.
 
-Anything the model reads from outside (a forwarded email, a web search result, a fact it
-remembered) reaches it fenced as data, never as instructions.
+Anything the model reads from outside (a forwarded email, a web page, a booking visitor's
+note, a fact it remembered) reaches it fenced as data, never as instructions.
 
 ## What it remembers
 
