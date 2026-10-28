@@ -129,6 +129,10 @@ def parse(raw: Any, prefix: str = "") -> list[dict[str, Any]]:
         # refuse to send is not one to offer.
         if "*" in model_id or not model_menu.valid_id(model_id) or model_id in seen:
             continue
+        # A batch variant answers in minutes to hours, for bulk jobs: no use to a family
+        # waiting on a reply, so it is not offered.
+        if model_id.endswith(":batch"):
+            continue
         seen.add(model_id)
         pricing: dict[str, Any] = _dict(item.get("pricing"))
         top: dict[str, Any] = _dict(item.get("top_provider"))

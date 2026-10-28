@@ -277,3 +277,22 @@ async def test_a_turn_reaches_the_server_with_the_whole_id(server, monkeypatch, 
     assert [b["model"] for b in server.bodies] == [OLLAMA, OLLAMA]
     assert all(b["reasoning_effort"] == "none" for b in server.bodies)
     assert all(b["chat_template_kwargs"] == {"enable_thinking": False} for b in server.bodies)
+
+
+def test_the_catalogue_leaves_out_batch_variants():
+    from luach import model_catalogue
+
+    got = model_catalogue.parse(
+        {
+            "data": [
+                {"id": "google/gemini-3.8-flash"},
+                {"id": "google/gemini-3.8-flash:batch"},
+                {"id": "qwen/qwen3:free"},
+            ]
+        },
+        prefix="openrouter/",
+    )
+    assert [m["id"] for m in got] == [
+        "openrouter/google/gemini-3.8-flash",
+        "openrouter/qwen/qwen3:free",
+    ]
