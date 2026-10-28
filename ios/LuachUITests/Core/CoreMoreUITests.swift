@@ -184,7 +184,8 @@ final class CoreMoreUITests: XCTestCase {
     func testALuachThatCannotBeReachedSaysSoAndOffersAWayOut() throws {
         guard LuachApp.session != nil else { throw XCTSkip("no test server") }
         let app = XCUIApplication()
-        app.launchArguments = ["-server", "https://nothing.invalid", "-sessionCookie", "x"]
+        app.launchArguments = ["-server", "https://nothing.invalid"]
+        app.launchEnvironment["LUACH_SESSION_COOKIE"] = "x"
         app.launch()
         app.staticTexts["luach is out of reach"].expect()
         app.buttons["Try again"].firstMatch.tap()

@@ -40,8 +40,10 @@ enum LuachApp {
             throw XCTSkip("set LUACH_TEST_SERVER and LUACH_TEST_SESSION (ios/scripts/test.sh does)")
         }
         let app = XCUIApplication()
-        // A fresh thread each time: no conversation carried over from the last run.
-        app.launchArguments = ["-server", server, "-sessionCookie", session, "-thread", ""] + arguments
+        // A fresh thread each time: no conversation carried over from the last run. The session
+        // goes in the environment: a launch argument shows in `ps` to anyone on the Mac.
+        app.launchArguments = ["-server", server, "-thread", ""] + arguments
+        app.launchEnvironment["LUACH_SESSION_COOKIE"] = session
         app.launch()
         return app
     }
@@ -66,7 +68,8 @@ enum LuachApp {
             throw XCTSkip("a read-only check against prod: ios/scripts/test-prod.sh")
         }
         let app = XCUIApplication()
-        app.launchArguments = ["-server", server, "-sessionCookie", session, "-thread", ""] + arguments
+        app.launchArguments = ["-server", server, "-thread", ""] + arguments
+        app.launchEnvironment["LUACH_SESSION_COOKIE"] = session
         app.launch()
         return app
     }

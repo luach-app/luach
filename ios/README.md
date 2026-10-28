@@ -104,15 +104,20 @@ names a Mac.
 ## Looking at a screen without tapping
 
 Debug builds read launch arguments (they land in `UserDefaults`), so a screen can be checked
-over SSH: `-server <url>`, `-sessionCookie <token>`, `-signedOut YES`, `-tab`, `-screen <name>`
-(any of FeatureScreens), `-ask`, `-showThreads YES`, and each area's own (`-agendaMode month`,
-`-boardDay 2`, `-householdScroll hours`, …; grep for `UserDefaults.standard` in its folder).
+over SSH: `-server <url>`, `-signedOut YES`, `-tab`, `-screen <name>` (any of FeatureScreens),
+`-ask`, `-showThreads YES`, and each area's own (`-agendaMode month`, `-boardDay 2`,
+`-householdScroll hours`, …; grep for `UserDefaults.standard` in its folder).
+
+The session is the one thing that is not an argument: arguments show in `ps` to anyone on the
+Mac. A debug build takes it from `LUACH_SESSION_COOKIE` in its environment, which `simctl launch`
+fills from `SIMCTL_CHILD_LUACH_SESSION_COOKIE` (and the UI tests from `launchEnvironment`). Set it
+with the shell's own `read` or `export`, never `env NAME=<token> …`, which is a command line too:
 
     D=<simulator udid>     # xcrun simctl list devices available
     xcrun simctl install $D build/Build/Products/Debug-iphonesimulator/Luach.app
+    read -rs SIMCTL_CHILD_LUACH_SESSION_COOKIE && export SIMCTL_CHILD_LUACH_SESSION_COOKIE   # paste the token
     xcrun simctl launch $D <bundle id> \
-      -server https://test.luach.example.com \
-      -sessionCookie <token> -tab ask -ask "What's on this week?"
+      -server https://test.luach.example.com -tab ask -ask "What's on this week?"
     xcrun simctl io $D screenshot /tmp/shot.png
 
 The token is a dev session from `scripts/verify_dev_pod.py mint`, run inside the dev server's
@@ -136,7 +141,8 @@ Three layers, run on the Mac (`LUACH_MAC_HOST`, or this one) from this checkout:
 and signs it out after, gives each run its own copy and simulator (`LUACH_TEST_NAME`; an area's
 name limits the run to that area's tests), stops any earlier run still going on that simulator, and
 fails under `LUACH_COVERAGE_MIN`. With no `LUACH_DEV_SERVER` it mints nothing and the integration and
-UI tests skip themselves. It refuses to start when `LUACH_DEV_SERVER` is `LUACH_PROD_SERVER`, and hands
+UI tests skip themselves. The session reaches the Mac on ssh's stdin and the tests in their
+environment, never in a command line (`ps` shows those to anyone on the Mac). It refuses to start when `LUACH_DEV_SERVER` is `LUACH_PROD_SERVER`, and hands
 prod's host to the tests (`LUACH_PROD_HOST`), which refuse it too. A full run is about 500 tests and
 60 UI tests, 98% of the app's lines.
 
