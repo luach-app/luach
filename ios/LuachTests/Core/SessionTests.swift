@@ -174,9 +174,9 @@ struct SessionTests {
     }
 
     @Test func aLaunchCookieSignsInToTheKnownServer() {
-        // `-sessionCookie <token>` at launch (simulator checks, UI tests): a cookie for that luach.
-        UserDefaults.standard.set("tok-\(server.host)", forKey: "sessionCookie")
-        defer { UserDefaults.standard.removeObject(forKey: "sessionCookie") }
+        // LUACH_SESSION_COOKIE at launch (simulator checks, UI tests): a cookie for that luach.
+        setenv("LUACH_SESSION_COOKIE", "tok-\(server.host)", 1)
+        defer { unsetenv("LUACH_SESSION_COOKIE") }
         _ = AppSession(api: server.api)
         let cookie = HTTPCookieStorage.shared.cookies(for: server.url)?.first { $0.name == "luach_session" }
         #expect(cookie?.value == "tok-\(server.host)")

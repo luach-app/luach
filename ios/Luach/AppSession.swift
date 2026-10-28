@@ -63,15 +63,26 @@ final class AppSession {
         if signedOut {
             for cookie in HTTPCookieStorage.shared.cookies ?? [] { HTTPCookieStorage.shared.deleteCookie(cookie) }
         }
-        // For checking screens in the simulator: launch arguments land in UserDefaults, so
-        //   simctl launch <device> <bundle id> -server https://luach.example.com -sessionCookie <token>
-        // opens signed in. The token comes from `scripts/verify_dev_pod.py mint`; log it out after.
-        if !signedOut, hasServer, let token = UserDefaults.standard.string(forKey: "sessionCookie"), let host = self.api.server.host(),
+        // For checking screens in the simulator, and for the UI tests: a session in the
+        // environment, never a launch argument (anyone on the Mac reads those in `ps`), so
+        //   SIMCTL_CHILD_LUACH_SESSION_COOKIE=<token> simctl launch <device> <bundle id> -server https://luach.example.com
+        // opens signed in (XCUIApplication: launchEnvironment["LUACH_SESSION_COOKIE"]). The token
+        // comes from `scripts/verify_dev_pod.py mint`; log it out after.
+        if !signedOut, hasServer, let token = Self.launchCookie(), let host = self.api.server.host(),
            let cookie = HTTPCookie(properties: [.name: "luach_session", .value: token, .domain: host, .path: "/", .secure: "TRUE"]) {
             HTTPCookieStorage.shared.setCookie(cookie)
         }
         #endif
     }
+
+    #if DEBUG
+    /// The session a debug launch was handed in LUACH_SESSION_COOKIE, if any.
+    static func launchCookie() -> String? {
+        guard let value = getenv("LUACH_SESSION_COOKIE") else { return nil }
+        let token = String(cString: value)
+        return token.isEmpty ? nil : token
+    }
+    #endif
 
     /// The luach an earlier build was signed in to. Builds before the address step remembered a
     /// server only when someone changed it, so a phone that always used the built-in one has no

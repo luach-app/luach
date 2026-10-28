@@ -41,10 +41,13 @@ trap 'kill $server 2>/dev/null' EXIT
 sleep 1
 
 rm -rf /tmp/luach-shots && mkdir -p /tmp/luach-shots
+# The session in the app's environment, as the UI tests hand it (AppSession.launchCookie): a
+# launch argument shows in `ps`. The demo household takes any.
+export SIMCTL_CHILD_LUACH_SESSION_COOKIE=demo
 shoot() {
   local name=$1 wait=$2; shift 2
   xcrun simctl terminate "$D" "$bundle" 2>/dev/null || true
-  xcrun simctl launch "$D" "$bundle" -server http://127.0.0.1:8765 -sessionCookie demo -thread "" "$@" >/dev/null
+  xcrun simctl launch "$D" "$bundle" -server http://127.0.0.1:8765 -thread "" "$@" >/dev/null
   sleep "$wait"
   xcrun simctl io "$D" screenshot "/tmp/luach-shots/$name.png" >/dev/null 2>&1
 }

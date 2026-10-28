@@ -40,10 +40,11 @@ user=$(sed -n 's/^LUACH_PROD_USER=//p' "$creds"); pass=$(sed -n 's/^LUACH_PROD_P
 [ "$user" = ios-test ] || { echo "the prod check signs in as ios-test only (got '$user')"; exit 2; }
 
 jar=$(mktemp); chmod 600 "$jar"
-body=$(python3 -c 'import json,sys; print(json.dumps({"username": sys.argv[1], "password": sys.argv[2]}))' "$user" "$pass")
+# The password goes through environments and stdin, never a process's arguments, which anyone on
+# the Mac reads in `ps`.
+code=$(LUACH_U="$user" LUACH_P="$pass" python3 -c 'import json, os; print(json.dumps({"username": os.environ["LUACH_U"], "password": os.environ["LUACH_P"]}))' |
+  curl -s -o /dev/null -w '%{http_code}' -c "$jar" -H 'Content-Type: application/json' --data-binary @- "$server/api/auth/login")
 unset pass
-code=$(curl -s -o /dev/null -w '%{http_code}' -c "$jar" -H 'Content-Type: application/json' -d "$body" "$server/api/auth/login")
-unset body
 [ "$code" = 200 ] || { echo "signing in as ios-test answered $code"; rm -f "$jar"; exit 2; }
 token=$(awk '$6 == "luach_session" {print $7}' "$jar")
 # However the run ends, the session goes with it.
@@ -53,8 +54,11 @@ D=$(xcrun simctl list devices available | grep -E "^ +luach-prod \(" | head -1 |
 [ -n "$D" ] || D=$(xcrun simctl create luach-prod "iPhone 18 Pro")
 pkill -f "xcodebuild test .*id=$D" 2>/dev/null && sleep 3
 rm -rf build/prod.xcresult
-env TEST_RUNNER_LUACH_PROD_SERVER="$server" TEST_RUNNER_LUACH_PROD_SESSION="$token" \
-  xcodebuild test -project Luach.xcodeproj -scheme Luach -destination "id=$D" -derivedDataPath build \
+# Exported, so the session is in no process's arguments; the UI tests hand it to the app in its
+# environment (LuachUITests/Support/LuachApp.swift).
+export TEST_RUNNER_LUACH_PROD_SERVER="$server" TEST_RUNNER_LUACH_PROD_SESSION="$token"
+unset token
+xcodebuild test -project Luach.xcodeproj -scheme Luach -destination "id=$D" -derivedDataPath build \
   -resultBundlePath build/prod.xcresult \
   -only-testing:LuachTests/ProdReadTests -only-testing:LuachUITests/ProdUITests > build/prod.log 2>&1
 status=$?

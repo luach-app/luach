@@ -67,18 +67,22 @@ if [ "$mode" = all ] && [ -n "$server" ]; then
   read -r cookie token _ < "$work/session"
   # Signed out however the run ends: the session is good for 30 days otherwise.
   # Interrupted, the Mac's half is stopped too, so nothing goes on testing with a dead session.
+  # The cookie reaches curl on stdin (-K -): an argument shows in `ps` to anyone on the machine.
   trap 'mac "pkill -f \"xcodebuild test .*luach-$name\"" 2>/dev/null || true
-        curl -s -o /dev/null -X POST -b "$cookie=$token" "$server/api/auth/logout"; rm -rf "$work"' EXIT
+        printf "cookie = \"%s=%s\"\n" "$cookie" "$token" | curl -s -o /dev/null -X POST -K - "$server/api/auth/logout"
+        rm -rf "$work"' EXIT
 fi
 
 only=()
 [ "$mode" = unit ] && only=(-only-testing:LuachTests)
 
 set +e
-# ssh joins its arguments into one command line, where an empty one (the token, in --unit)
-# would vanish and shift the rest: each is quoted on its way.
-mac "bash -s -- $(printf '%q ' "$dir" "$name" "$server" "$token" "$prod_host" "${LUACH_COVERAGE_MIN:-0}" ${only[@]+"${only[@]}"} "$@")" <<'MAC'
-dir=$1 name=$2 server=$3 token=$4 prod_host=$5 floor=$6; shift 6
+# ssh joins its arguments into one command line, where an empty one would vanish and shift the
+# rest: each is quoted on its way. The session is not among them: arguments show in `ps` to
+# anyone on either machine, so it goes ahead of the script on ssh's stdin, and on the Mac only
+# into the environment of what needs it.
+IFS= read -r -d '' script <<'MAC'
+dir=$1 name=$2 server=$3 prod_host=$4 floor=$5; shift 5
 cd "$dir"/ios
 D=$(xcrun simctl list devices available | grep -E "^ +luach-$name \(" | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
 [ -n "$D" ] || D=$(xcrun simctl create "luach-$name" "iPhone 18 Pro")
@@ -89,9 +93,13 @@ pkill -f "xcodebuild test .*id=$D" 2>/dev/null && sleep 3
 bundle=$(sed -n 's/.*PRODUCT_BUNDLE_IDENTIFIER = \(.*\);/\1/p' Luach.xcodeproj/project.pbxproj | head -1)
 xcrun simctl boot "$D" 2>/dev/null; xcrun simctl privacy "$D" grant microphone "$bundle" 2>/dev/null
 mkdir -p build && rm -rf build/tests.xcresult
-env TEST_RUNNER_LUACH_TEST_SERVER="${token:+$server}" TEST_RUNNER_LUACH_TEST_SESSION="$token" \
-  TEST_RUNNER_LUACH_PROD_HOST="$prod_host" \
-  xcodebuild test -project Luach.xcodeproj -scheme Luach -destination "id=$D" \
+# Exported, not `env NAME=value …`: the shell's own export puts the session in no process's
+# arguments. xcodebuild hands TEST_RUNNER_* to the test runner without the prefix, and the UI
+# tests hand the session to the app in its environment (LuachUITests/Support/LuachApp.swift).
+export TEST_RUNNER_LUACH_TEST_SERVER="${token:+$server}" TEST_RUNNER_LUACH_TEST_SESSION="$token" \
+  TEST_RUNNER_LUACH_PROD_HOST="$prod_host"
+unset token
+xcodebuild test -project Luach.xcodeproj -scheme Luach -destination "id=$D" \
   -derivedDataPath build -resultBundlePath build/tests.xcresult "$@" > build/test.log 2>&1
 status=$?
 # What failed, in the words of the assertion; then the totals.
@@ -123,6 +131,8 @@ PY
 fi
 exit $status
 MAC
+{ printf 'token=%q\n' "$token"; printf '%s' "$script"; } |
+  mac "bash -s -- $(printf '%q ' "$dir" "$name" "$server" "$prod_host" "${LUACH_COVERAGE_MIN:-0}" ${only[@]+"${only[@]}"} "$@")"
 status=$?
 set -e
 [ $status -eq 0 ] && echo "TESTS PASSED" || echo "TESTS FAILED ($status)"
