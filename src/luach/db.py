@@ -17,6 +17,7 @@ Tables:
     tasks, task_done                      to-dos and chores, and the days a chore was done
     boards, board_pairings                screens on the wall, and screens waiting to become one
     menu_models, model_trials             the models members choose from, and their "Try it" runs
+    calendar_feeds                        each member's calendar subscription link (its hash)
 
 The store is Postgres (since 2026-10; one SQLite file before). Its schema is
 Alembic's: src/luach/migrations, brought to head by ``luach-migrate`` before the
@@ -531,6 +532,23 @@ class ModelTrial(Base):
     #: One {case, about, ok, problems, tools} per case run.
     report_json: Mapped[str] = mapped_column(Text, default="[]")
     error: Mapped[str] = mapped_column(Text, default="")
+
+
+class CalendarFeed(Base):
+    """A member's calendar subscription link (see luach.feed): one at most, off until
+    they turn it on. Only the token's hash is kept, so the link is shown once; a
+    removed member's goes with them."""
+
+    __tablename__ = "calendar_feeds"
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    token_hash: Mapped[str] = mapped_column(String, unique=True)
+    #: household | mine
+    scope: Mapped[str] = mapped_column(String, default="household")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    #: When a calendar app last read it; NULL until one has.
+    last_read: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 # --- engine ---------------------------------------------------------------
