@@ -8,7 +8,7 @@ import type { FeedLink, FeedStatus } from '../../lib/types'
 
 const off: FeedStatus = { enabled: false, scope: 'household', created_at: null, last_read: null }
 const on: FeedStatus = { enabled: true, scope: 'household', created_at: '2026-10-20T12:00:00+00:00', last_read: null }
-const TOKEN = 'k3Wq0pZ8mJ1xV7bN2cR5tY9uI4oP6aS8dF0gH2jK4lQ'
+const TOKEN = 'testfeedtokenAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
 const made: FeedLink = { ...on, url: `https://luach.test/feed/${TOKEN}.ics`, webcal: `webcal://luach.test/feed/${TOKEN}.ics` }
 
 afterEach(() => vi.restoreAllMocks())

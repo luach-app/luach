@@ -11,7 +11,7 @@ import Testing
 struct YouFeedTests {
     let server = StubServer()
 
-    static let token = "k3Wq0pZ8mJ1xV7bN2cR5tY9uI4oP6aS8dF0gH2jK4lQ"
+    static let token = "testfeedtokenAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     static let off: [String: Any] = ["enabled": false, "scope": "household", "created_at": NSNull(), "last_read": NSNull()]
     static func on(_ scope: String = "household", read: Any = NSNull()) -> [String: Any] {
         ["enabled": true, "scope": scope, "created_at": "2026-10-20T12:00:00+00:00", "last_read": read]
