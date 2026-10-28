@@ -228,6 +228,17 @@ async def test_past_event_is_held(calendar):
     assert calendar.events == {}
 
 
+async def test_a_held_card_does_not_show_what_the_gate_told_the_model(calendar):
+    yesterday = (times.now_in(TZ) - timedelta(days=1)).strftime("%Y-%m-%dT10:00")
+    runtime.set_model(
+        ScriptedModel([[call("create_event", title="Old thing", start=yesterday)], [say("held")]])
+    )
+    frames = [f async for f in runtime.stream_turn("x", user_id=1, principal="robin", timezone=TZ)]
+    held = [f for f in frames if f["type"] == "held"]
+    assert held and held[0]["reason"] == ["past"]
+    assert held[0]["reason_text"] == ""
+
+
 async def test_duplicate_is_held(calendar):
     first = ScriptedModel(
         [[call("create_event", title="Dentist", start=_tomorrow_at(15))], [say("ok")]]
