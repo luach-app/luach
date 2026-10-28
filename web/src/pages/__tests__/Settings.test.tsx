@@ -30,6 +30,7 @@ beforeEach(() => {
   vi.spyOn(api.booking, 'mine').mockResolvedValue(booking as never)
   vi.spyOn(api.booking, 'upcoming').mockResolvedValue({ bookings: [] } as never)
   vi.spyOn(api.busy, 'list').mockResolvedValue({ sources: [] } as never)
+  vi.spyOn(api.calendarFeed, 'status').mockResolvedValue({ enabled: false, scope: 'household', created_at: null, last_read: null })
   vi.spyOn(api.reminders, 'get').mockResolvedValue({ lead_minutes: 0, evening_hour: -1, weekly_day: -1, weekly_hour: 18, by_email: false } as never)
   vi.spyOn(api.passkeys, 'list').mockResolvedValue({ passkeys: [] } as never)
   vi.spyOn(api.control, 'audit').mockResolvedValue({ entries: [], total: 0, chain_verified: true, head: '' } as never)
@@ -54,6 +55,7 @@ describe('everything a member can set', () => {
     }
     // "Household" names both the tab and the card, so look for the card's own line.
     await go('Household', 'The calendars luach reads, where new things go, and who is invited to everything.')
+    await go('Calendar feed', 'Show luach’s events in your phone’s own calendar (iPhone, Mac, Google Calendar, Outlook), read-only. It holds a month back and a year ahead: titles, places, notes and whom each event is for. Never who is invited, nothing waiting for approval, and not your work calendar.')
     await go('Meetings', 'Meetings with me')
     await waitFor(() => expect(screen.getByText('Work calendar')).toBeInTheDocument())
     await go('Reminders', 'Before something starts')

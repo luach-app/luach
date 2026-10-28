@@ -6,6 +6,9 @@ import type {
   BookingManage,
   BookingPage,
   BusySource,
+  FeedLink,
+  FeedScope,
+  FeedStatus,
   ReminderSettings,
   BookingRow,
   BookingSettings,
@@ -246,6 +249,15 @@ export const busy = {
     api.patch<{ sources: BusySource[] }>(`/api/busy/${id}`, b),
   remove: (id: number) => api.del<{ sources: BusySource[] }>(`/api/busy/${id}`),
   refresh: () => api.post<{ read: number; sources: BusySource[] }>('/api/busy/refresh'),
+}
+
+/* ---- the member's calendar feed (their phone's own calendar app) --------- */
+export const calendarFeed = {
+  status: () => api.get<FeedStatus>('/api/feed'),
+  turnOn: (scope: FeedScope) => api.post<FeedLink>('/api/feed', { scope }),
+  reset: () => api.post<FeedLink>('/api/feed/reset'),
+  change: (scope: FeedScope) => api.patch<FeedStatus>('/api/feed', { scope }),
+  turnOff: () => api.del<FeedStatus>('/api/feed'),
 }
 
 /* ---- the model menu (the owner's) --------------------------------------- */

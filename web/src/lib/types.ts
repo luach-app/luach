@@ -190,6 +190,23 @@ export interface ReminderSettings {
 }
 
 /** A read-only feed (the work calendar) luach reads busy time from. */
+/** What a member's calendar feed holds: everyone's events, or theirs (and everyone's). */
+export type FeedScope = 'household' | 'mine'
+
+/** A member's calendar feed, as GET /api/feed has it. Never the link: the server keeps only its hash. */
+export interface FeedStatus {
+  enabled: boolean
+  scope: FeedScope
+  created_at: string | null
+  last_read: string | null
+}
+
+/** Turn on and Reset: the status, and the link, this once. */
+export interface FeedLink extends FeedStatus {
+  url: string
+  webcal: string
+}
+
 export interface BusySource {
   id: number
   name: string
