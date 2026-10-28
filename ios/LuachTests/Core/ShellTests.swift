@@ -17,7 +17,7 @@ struct ShellTests {
     }
 
     @Test func everyScreenHasANameAndAnIcon() {
-        #expect(Screen.allCases.count == 16)
+        #expect(Screen.allCases.count == 17)
         for screen in Screen.allCases {
             #expect(UIImage(systemName: screen.symbol) != nil, "\(screen) has no icon")
             #expect(Screen(rawValue: screen.id) == screen)

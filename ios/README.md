@@ -14,8 +14,10 @@ It does what the web app does. Tabs, in the web's order:
 | Ask | Text or the mic; the reply streams with its steps, cards, model and copy; earlier conversations to reopen, rename or delete |
 
 The account button on every tab opens Settings in the web's sections: You (profile,
-addresses, Gmail, also notify, memory), Household and Members (owner), Meetings (booking
-page, busy calendars), Reminders, Security (passkeys, password, audit trail, delete account).
+addresses, Gmail, also notify, memory), Calendar feed (luach's events in the iPhone's own
+Calendar, through a `webcal://` link: Add to Calendar), Household and Members (owner), Meetings
+(booking page, busy calendars), Reminders, Security (passkeys, password, audit trail, delete
+account).
 Screens are named in `Features/FeatureScreens.swift`. A settings form, the event editor and the
 task editor ask "Discard changes?" before Back, Cancel or a swipe drops unsaved edits.
 

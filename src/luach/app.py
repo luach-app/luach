@@ -18,7 +18,7 @@ from sqlalchemy import select
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from luach import __version__, config, db, loops_lock, memory_health, model_menu, public_pages
+from luach import __version__, config, db, feed, loops_lock, memory_health, model_menu, public_pages
 from luach.agent import control
 from luach.auth import api_key, csrf, sessions, throttle
 from luach.auth.current import Caller, set_caller
@@ -37,6 +37,7 @@ from luach.routes import (
     transcribe,
 )
 from luach.routes import control as control_routes
+from luach.routes import feed as feed_routes
 from luach.routes import mail as mail_routes
 from luach.routes import memory as memory_routes
 from luach.routes import tasks as task_routes
@@ -130,6 +131,9 @@ class AuthWall:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
+        if scope.get("path", "").startswith(feed.PREFIX):
+            await self._feed(scope, receive, send)
+            return
         # Latin-1, as HTTP and Starlette have it: any byte decodes, so a header nobody
         # expected is a header that does not match rather than a 500.
         headers = {
@@ -217,6 +221,25 @@ class AuthWall:
             await response(scope, receive, send)
             return
         await self.app(scope, receive, send)
+
+    async def _feed(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """A calendar feed (luach.feed): open, because the token in the path is the proof.
+        Exactly ``/feed/<token>.ics`` and only to read it; anything else under /feed/ is
+        not found here, before any route sees it. No caller is resolved, so a cookie or a
+        key sent along changes nothing."""
+        set_caller(None)
+        if not feed.PATH.fullmatch(scope.get("path", "")):
+            response = JSONResponse({"error": "no such route"}, status_code=404)
+        elif scope.get("method", "GET") not in ("GET", "HEAD"):
+            response = JSONResponse(
+                {"error": "a calendar feed is only read"},
+                status_code=405,
+                headers={"Allow": "GET, HEAD"},
+            )
+        else:
+            await self.app(scope, receive, send)
+            return
+        await response(scope, receive, send)
 
 
 def _forwarded_host(scope: Scope) -> str:
@@ -460,12 +483,13 @@ class _NoSecretsInTheAccessLog(logging.Filter):
     callback likewise), and luach's own mails link to ?reset=, ?invite=, ?verify= and a
     booking's ?manage=. Some tokens are in the path itself: an invitation is read at
     /api/auth/invite/<token>, a booking managed at /api/book/<slug>/manage/<token>, a
-    screen collects its pairing at /api/board/pair/<code>. Short-lived or not, each is a
-    credential and has no business in a log."""
+    screen collects its pairing at /api/board/pair/<code>, a calendar app reads a member's
+    feed at /feed/<token>.ics. Short-lived or not, each is a credential and has no
+    business in a log."""
 
     _SECRET = re.compile(r"\b(code|state|reset|invite|verify|manage|token|nonce)=[^&\s\"]+")
     _IN_PATH = re.compile(
-        r"(/api/auth/invite/|/api/book/[^/?\s\"]+/manage/|/api/board/pair/)[^/?\s\"]+"
+        r"(/api/auth/invite/|/api/book/[^/?\s\"]+/manage/|/api/board/pair/|/feed/)[^/?\s\"]+"
     )
 
     def filter(self, record: logging.LogRecord) -> bool:
@@ -584,6 +608,7 @@ def create_app(static_dir: str | Path | None = None) -> FastAPI:
         family,
         household,
         agent,
+        feed_routes,
         control_routes,
         task_routes,
         transcribe,

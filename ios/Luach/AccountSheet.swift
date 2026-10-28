@@ -19,6 +19,8 @@ struct AccountSheet: View {
                     }
                 }
                 group("You", [.profile, .emails, .mailbox, .notify, .memory])
+                // luach's events in this iPhone's own Calendar app (a webcal:// subscription).
+                group("Calendar feed", [.calendarFeed])
                 if session.member?.isOwner == true {
                     group("Household", [.members, .household, .models])
                 }

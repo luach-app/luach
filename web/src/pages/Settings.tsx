@@ -7,6 +7,7 @@ import { answering, useModels } from '../lib/models'
 import { Audit } from '../components/Audit'
 import { Booking } from '../components/Booking'
 import { BusyCalendars } from '../components/BusyCalendars'
+import { CalendarFeed } from '../components/CalendarFeed'
 import { Reminders } from '../components/Reminders'
 import { EmailChips } from '../components/EmailChips'
 import { Emails } from '../components/Emails'
@@ -42,9 +43,11 @@ export function Settings({ member, onMember, onSignOut }: Props) {
 
   // Eleven cards in one column was a page you scrolled rather than read. The
   // sections are how a person thinks about them: who I am, what the household
-  // shares, how people book me, what luach tells me, and the record.
+  // shares, how people book me, what luach tells me, and the record. The calendar feed
+  // has its own: it is about the phone's calendar, not any of those.
   const sections = [
     { id: 'you', label: 'You' },
+    { id: 'feed', label: 'Calendar feed' },
     ...(member.is_owner ? [{ id: 'household', label: 'Household' }] : []),
     { id: 'meetings', label: 'Meetings' },
     { id: 'alerts', label: 'Reminders' },
@@ -86,6 +89,8 @@ export function Settings({ member, onMember, onSignOut }: Props) {
           <Memory />
         </>
       ) : null}
+
+      {section === 'feed' ? <CalendarFeed /> : null}
 
       {section === 'household' && member.is_owner ? (
         <>
