@@ -154,7 +154,7 @@ async def change(request: Request) -> dict:
 def turn_off() -> dict:
     member = _in_person()
     feed.turn_off(member.id)
-    return feed.status(member.id)
+    return {"ok": True, **feed.status(member.id)}
 
 
 async def _optional_body(request: Request) -> dict:
