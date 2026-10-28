@@ -281,14 +281,18 @@ makes every answer wait.
    curl -fsSL https://ollama.com/install.sh | sh
    ```
 
-2. Let containers reach it. Ollama listens only on `127.0.0.1` at first, and luach's
-   container comes from Docker's network, not from `127.0.0.1`, so it cannot connect until you
-   change that. Run `sudo systemctl edit ollama` and add, in the space the editor leaves for
+2. Let containers reach it, and give models room. Ollama listens only on `127.0.0.1` at
+   first, and luach's container comes from Docker's network, not from `127.0.0.1`, so it
+   cannot connect until you change that. And Ollama's context window can be as small as 4096
+   tokens (it is on a machine without a large GPU), less than luach's instructions and tools
+   (about 4,200 tokens before a word of the conversation): Ollama cuts the beginning off, and
+   the model answers without its instructions. Run `sudo systemctl edit ollama` and add, in the space the editor leaves for
    it:
 
    ```
    [Service]
    Environment="OLLAMA_HOST=0.0.0.0:11434"
+   Environment="OLLAMA_CONTEXT_LENGTH=32768"
    ```
 
    then `sudo systemctl restart ollama`. Ollama has no password: if this machine's firewall
@@ -300,28 +304,23 @@ makes every answer wait.
    ```
 
 **On a Mac:** install the Ollama app from [ollama.com](https://ollama.com). Docker Desktop
-reaches it as it is, with nothing to change.
+reaches it as it is. In the app's **Settings**, move **Context length** to 32k (4k is smaller
+than luach's instructions).
 
 **Then, on either:**
 
-3. Download a model that calls tools, and give it a name luach can use. luach refuses model
-   ids with a colon in them (a colon would let a request choose another provider), and every
-   Ollama name has one (`qwen3.6:35b-a3b`). A small Modelfile gives the model a name without
-   one, and a context window big enough for luach's instructions and a conversation (Ollama's
-   own default is smaller):
+3. Download a model that calls tools:
 
    ```bash
    ollama pull qwen3.6:35b-a3b
-   printf 'FROM qwen3.6:35b-a3b\nPARAMETER num_ctx 32768\n' > Modelfile
-   ollama create luach-model -f Modelfile
    ```
 
-4. In `.env`:
+4. In `.env`, with the model's name as Ollama gives it, colon and all:
 
    ```
    OPENAI_BASE_URL=http://host.docker.internal:11434/v1
    OPENAI_API_KEY=ollama
-   LUACH_MODEL=luach-model
+   LUACH_MODEL=qwen3.6:35b-a3b
    ```
 
    `host.docker.internal` is the machine itself, as luach's container sees it
@@ -330,15 +329,19 @@ reaches it as it is, with nothing to change.
 
 Once luach is running, open **Settings › Household › Models**, choose **Edit** on the model,
 and tick **Runs on our own computer (nothing leaves the house)**: the privacy page then says
-so, and the iPhone app does not ask members before sending their questions to it. Use
-**Try it** to see how it scores. Ollama's catalogue lists names with a colon
-(`luach-model:latest`); add other models by their name without the `:latest`, after making
-each one with a Modelfile as above.
+so, the iPhone app does not ask members before sending their questions to it, and luach
+asks the model not to think out loud (below). Use **Try it** to see how it scores. Add other
+models from the list Ollama gives, by the name `ollama pull` used.
 
-Qwen3 models think before they answer, and on Ollama luach cannot switch that off (Ollama
-ignores the switch luach sends), so each answer takes longer. On the hardware above that is a
-few seconds; on a computer without a suitable GPU, even a small model takes minutes per
-answer, which is not usable. **Try it** shows both the score and how long it took.
+Qwen3 models think before they answer unless asked not to, which makes every answer slower.
+Ollama does not hear the switch luach sends vLLM; it hears `reasoning_effort: "none"`, which
+luach sends to a model marked **Runs on our own computer**. Measured with `qwen3:1.7b` on a
+computer without a GPU, "dentist next Tuesday at 3pm" took 38 seconds with it and 74 without,
+and "what is on next week?" 26 and 127. Even so, without a suitable GPU a model is slow, and
+small models are not good at luach's tools: **Try it** shows both the score and how long it
+took.
+`LUACH_REASONING_EFFORT_NONE=always` sends it to every model (for an Ollama behind another
+name), `never` to none.
 
 **vLLM** (or LiteLLM, LocalAI, or any other OpenAI-compatible server) works the same way: put
 its address, ending in `/v1`, in `OPENAI_BASE_URL`, and its name for the model in
@@ -1071,7 +1074,7 @@ LUACH_ZOOM_CLIENT_SECRET=...
 - **`LUACH_MODELS`** fills an empty menu once, on the first start, as JSON:
 
   ```
-  LUACH_MODELS=[{"id":"luach-model","name":"At home","about":"Runs on our own computer.","local":true},{"id":"deepseek/deepseek-v4-flash-0731","name":"DeepSeek","about":"Sent to DeepSeek, through OpenRouter."}]
+  LUACH_MODELS=[{"id":"qwen3.6:35b-a3b","name":"At home","about":"Runs on our own computer.","local":true},{"id":"deepseek/deepseek-v4-flash-0731","name":"DeepSeek","about":"Sent to DeepSeek, through OpenRouter."}]
   ```
 
   `local: true` marks a model on your own computer. A value that is not valid JSON of that
@@ -1097,6 +1100,10 @@ LUACH_ZOOM_CLIENT_SECRET=...
   **Check** asks it now.
 - `LUACH_ENABLE_THINKING` (off) lets the model reason before answering; on the models tested
   it cost tool calls. `LUACH_MAX_ITERATIONS` (16) caps the model calls in one turn.
+- `LUACH_REASONING_EFFORT_NONE` (`local`) is where thinking-off is also sent as
+  `reasoning_effort: "none"`, the switch Ollama hears: to models marked as running on your
+  own computer (`local`), to every model (`always`), or to none (`never`). Not every provider
+  takes a parameter it does not expect, which is why it is not sent everywhere by default.
 
 ## Memory
 
@@ -1270,10 +1277,13 @@ add it: LUACH_TRUSTED_PROXIES=...`. Use the `LUACH_TRUSTED_PROXIES` line from `.
 (the compose subnet), or the one the warning gives. A member locked out waits 5 minutes, or
 signs in with a passkey or single sign-on, which the lock does not stop.
 
-**The assistant answers `luach hit a problem: NoModel`.** The model's id has a colon in it
-(an Ollama name such as `qwen3.6:35b-a3b`), which luach refuses. Give the model a name without
-one, as in [Ollama](#b-a-local-model-with-ollama-on-the-same-machine), and put that in
-`LUACH_MODEL`.
+**The log says `LUACH_MODEL is not a model id luach can send`.** The id has a space, a
+character outside letters, digits and `. _ ~ / @ + - :`, two colons together, or more than 128
+characters. Copy the name exactly as the model server lists it (`ollama list`).
+
+**Ollama's answers ignore what luach told the model, or its log says `truncating input
+prompt`.** Ollama's context window is smaller than luach's instructions: set
+`OLLAMA_CONTEXT_LENGTH`, as in [Ollama](#b-a-local-model-with-ollama-on-the-same-machine).
 
 **The assistant says `No AI model is set up for this luach yet`.** `OPENAI_BASE_URL` or
 `LUACH_MODEL` is empty. The log says at start: `no model is configured: the assistant will say so until

@@ -502,6 +502,18 @@ def enable_thinking() -> bool:
     return flag("LUACH_ENABLE_THINKING", False)
 
 
+def reasoning_effort_none() -> str:
+    """When a request carries ``reasoning_effort: "none"`` (``model_menu.effort_none``):
+    ``local`` (the default) for a model marked as running at home, ``always``, or
+    ``never``. Ollama ignores the ``chat_template_kwargs`` switch vLLM reads and
+    honours this one: measured on qwen3:0.6b, "Say hi." took 90 tokens with it absent,
+    most of them thinking, and 12 with it; on qwen3:1.7b without a GPU, a turn that
+    adds an event took 38 s with it and 74 s without. A server that refuses parameters
+    it does not know is why it is not sent to every model."""
+    value = env("LUACH_REASONING_EFFORT_NONE", "local").strip().lower()
+    return value if value in {"local", "always", "never"} else "local"
+
+
 def max_iterations() -> int:
     """How many model calls one turn may take.
 

@@ -312,6 +312,10 @@ def child_env(store_url: str, model_id: str, home: str) -> dict[str, str]:
             "OPENAI_BASE_URL": config.model_base_url(),
             "OPENAI_API_KEY": config.model_api_key(),
             "LUACH_ENABLE_THINKING": "1" if config.enable_thinking() else "0",
+            # The child's menu does not know the model runs at home: say what to send.
+            "LUACH_REASONING_EFFORT_NONE": (
+                "always" if model_menu.effort_none(model_id) else "never"
+            ),
             "LUACH_MAX_ITERATIONS": str(config.max_iterations()),
             "PYTHONUNBUFFERED": "1",
         }

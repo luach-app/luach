@@ -33,8 +33,8 @@ APPROVAL_WORDS = re.compile(
     re.IGNORECASE,
 )
 
-#: Models built for each name, one client each.
-_models: dict[str, Any] = {}
+#: Models built for each name (and whether its requests turn reasoning off), one client each.
+_models: dict[str | tuple[str, bool], Any] = {}
 _SCRIPTED = "__scripted__"
 _checkpointer: Any = None
 
@@ -42,15 +42,14 @@ _checkpointer: Any = None
 def clean_model(name: str) -> str:
     """A model name a request may ask for, or "" for the household's own.
 
-    The name is interpolated into tulip's ``provider:model`` spec, so a colon
-    would let a request choose a provider; whitespace and a silly length are
-    refused for the same reason. A name that does not pass is not an error —
-    the turn is answered by the default rather than failed.
+    The menu's own rule (``model_menu.valid_id``): a colon is allowed, as in
+    Ollama's "qwen3:8b", because the name only ever becomes the ``model`` of an
+    OpenAI-compatible request (``get_model``), never a provider. A name that does
+    not pass is not an error: the turn is answered by the default rather than
+    failed.
     """
     name = (name or "").strip()
-    if not name or len(name) > 128 or ":" in name or any(c.isspace() for c in name):
-        return ""
-    return name
+    return name if model_menu.valid_id(name) else ""
 
 
 def _chosen_model(user_id: int | None) -> str:
@@ -69,16 +68,24 @@ def get_model(name: str = "") -> Any:
     name is the household's default as it is now (``model_menu.default_id``), so an
     owner's change of default reaches the next turn without a restart.
     """
-    from tulip.models import get_model as tulip_get_model
+    from tulip.models.native.openai import OpenAIModel
 
-    def build(model_id: str) -> Any:
-        return tulip_get_model(
-            f"openai:{model_id}",
+    def build(model_id: str, effort_none: bool) -> Any:
+        # Built directly rather than through tulip's get_model("provider:model"),
+        # which splits on a colon: the id is only ever the request's "model", so
+        # "qwen3:8b" stays whole and no id can name another provider.
+        extra: dict[str, Any] = {
+            "chat_template_kwargs": {"enable_thinking": config.enable_thinking()}
+        }
+        if effort_none:
+            extra["reasoning_effort"] = "none"
+        return OpenAIModel(
+            model=model_id,
             base_url=config.model_base_url(),
             api_key=config.model_api_key(),
             temperature=0.2,
             max_tokens=2048,
-            extra_body={"chat_template_kwargs": {"enable_thinking": config.enable_thinking()}},
+            extra_body=extra,
         )
 
     # A scripted model stands in for every name, so a test can pick one.
@@ -88,9 +95,10 @@ def get_model(name: str = "") -> Any:
     wanted = clean_model(name) or clean_model(model_menu.default_id())
     if not wanted:
         raise NoModel(NO_MODEL)
-    if wanted not in _models:
-        _models[wanted] = build(wanted)
-    return _models[wanted]
+    key = (wanted, model_menu.effort_none(wanted))
+    if key not in _models:
+        _models[key] = build(*key)
+    return _models[key]
 
 
 #: What a turn answers when there is no model to ask.
