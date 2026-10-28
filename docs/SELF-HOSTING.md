@@ -49,10 +49,10 @@ HTTPS front door) and SearXNG (web search) a little more. So:
 - **Memory:** 2 GB is enough; 4 GB leaves room. (A local model needs far more: see below.)
 - **Disk:** about 3 GB for the images, then very little: a family's calendar, conversations
   and memory are megabytes. 20 GB is plenty, and leaves room for backups.
-- **Processor:** any 64-bit **x86** machine (also called amd64 or x86-64). The published image
-  is built for x86 only. On an ARM machine (a Raspberry Pi, a Mac with Apple silicon, some
-  NASes) you build the image yourself from the source, which `compose.build.yml` does for you
-  ([step 2](#step-2-get-luach)).
+- **Processor:** any 64-bit machine: **x86** (also called amd64 or x86-64) or **ARM** (arm64
+  or aarch64: a Raspberry Pi 4 or 5 with the 64-bit Raspberry Pi OS, a Mac with Apple silicon,
+  many NASes). The published image is built for both, and Docker pulls the one that fits.
+  32-bit ARM (an older Raspberry Pi OS, armv7) is not supported.
 
 ### A domain name
 
@@ -119,8 +119,8 @@ missing: `sudo apt install -y git` on Ubuntu or Debian.
 ### A Synology NAS
 
 1. In DSM, open **Package Center**, find **Container Manager**, and install it (DSM 7.2 or
-   later). If your model has an ARM processor (Synology's product page says which), build
-   the image yourself, as step 2 explains.
+   later). An ARM model works as an x86 one does, if its processor is 64-bit (Synology's
+   product page says which).
 2. In **Control Panel › Terminal & SNMP**, tick **Enable SSH service** and apply.
 3. From your computer, `ssh <your-dsm-user>@<the-nas-address>`. Every command in this guide
    then runs there, with `sudo` in front of `docker`: `sudo docker compose up -d`.
@@ -140,9 +140,6 @@ commands are the same thing, and this guide uses them.)
 1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) and start it.
 2. git comes with Apple's command line tools: run `git --version` in Terminal and accept the
    offer to install them.
-
-On a Mac with Apple silicon, build the image yourself (step 2), because the published image is
-for x86.
 
 ### Check it
 
@@ -203,18 +200,19 @@ Everything under **Required** at the top:
 Everything else is off until you set it, and each optional section below says which lines it
 needs.
 
-### On an ARM machine: build the image yourself
+### To build the image yourself
 
-The published image (`ghcr.io/luach-app/luach`) is for x86 machines. On a Raspberry Pi, a Mac
-with Apple silicon or an ARM NAS, uncomment `COMPOSE_FILE` in `.env` and make it:
+You do not need to: the published image (`ghcr.io/luach-app/luach`) runs on x86 and 64-bit ARM
+alike. To run luach from the source you cloned instead, with changes of your own, uncomment
+`COMPOSE_FILE` in `.env` and make it:
 
 ```
 COMPOSE_FILE=docker-compose.yml:compose.build.yml
 ```
 
 and add `--build` to the first `docker compose up` in step 4. The build takes a few minutes and
-about 2 GB of memory. You can do the same on any machine to run luach from the source you
-cloned. When step 5 adds more files to `COMPOSE_FILE`, keep `compose.build.yml` in the list.
+about 2 GB of memory. When step 5 adds more files to `COMPOSE_FILE`, keep `compose.build.yml` in
+the list.
 
 ## Step 3: a model
 
@@ -471,7 +469,7 @@ one ready, Caddy, which gets and renews a free certificate from Let's Encrypt by
    COMPOSE_FILE=docker-compose.yml:compose.caddy.yml
    ```
 
-   (On an ARM machine: `COMPOSE_FILE=docker-compose.yml:compose.build.yml:compose.caddy.yml`.)
+   (Building the image yourself: `COMPOSE_FILE=docker-compose.yml:compose.build.yml:compose.caddy.yml`.)
    `LUACH_APP_URL` is exactly what people will type, with no slash at the end. luach builds
    every link in its mail from it, checks that changes come from it, and ties passkeys to it.
    `LUACH_TRUSTED_PROXIES` stays as `.env.example` set it.

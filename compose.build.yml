@@ -1,5 +1,6 @@
-# Build luach's image from this checkout instead of pulling the published one: on a machine
-# the published image does not run on (it is built for x86-64), or to run changes of your own.
+# Build luach's image from this checkout instead of pulling the published one, to run changes
+# of your own. (The published image runs on x86-64 and 64-bit ARM alike, so a Raspberry Pi or a
+# Mac with Apple silicon does not need this.)
 #
 #   docker compose -f docker-compose.yml -f compose.build.yml up -d --build
 #

@@ -212,7 +212,8 @@ family, the iPhone app and a kitchen screen, then backups, upgrades and troubles
 What it takes, in short:
 
 - A machine that stays on, with Docker and 2 GB of memory. The published image,
-  `ghcr.io/luach-app/luach`, is for x86-64; on ARM the compose files build it from source.
+  `ghcr.io/luach-app/luach`, is for x86-64 and 64-bit ARM (a Raspberry Pi 4 or 5, a Mac with
+  Apple silicon, an ARM NAS).
 - A model that supports tool calling, behind any OpenAI-compatible endpoint: a cloud one
   (about a dollar a month for a family, measured) or one you run.
 - For anyone but you on the machine itself: a domain name, for HTTPS.

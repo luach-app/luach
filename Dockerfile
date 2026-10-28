@@ -6,7 +6,9 @@
 # $CREDENTIALS_DIRECTORY (a mounted secret, say); config.load_credentials() folds them in
 # at startup.
 
-FROM node:24-slim AS web
+# The web app is JavaScript and CSS, the same on every processor, so it is built on the build
+# machine's own (BUILDPLATFORM) rather than under emulation for each platform of the image.
+FROM --platform=$BUILDPLATFORM node:24-slim AS web
 WORKDIR /web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
