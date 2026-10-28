@@ -659,6 +659,45 @@ Not in the app yet: single sign-on, signing in with a passkey, and accepting inv
 Those are in the web app, which also installs on a phone's home screen (Share › Add to Home
 Screen in Safari).
 
+### The phone's own calendar
+
+Each member can have luach's events in the calendar app they already use (Apple Calendar on
+an iPhone or a Mac, Google Calendar, Outlook), read-only, beside their other calendars. It is
+off until they turn it on, and nothing is needed on the server.
+
+1. In luach, open **Settings › Calendar feed**. Choose what it shows: **the whole household**,
+   or **only mine** (their own events and the ones for everyone).
+2. Choose **Turn on**. luach shows a link, once.
+3. On an iPhone or a Mac, choose **Subscribe** (in the iPhone app, **Add to Calendar**), and
+   confirm in Calendar. In Google Calendar on the web: **Other calendars › + › From URL**, paste
+   the link. In Outlook: **Add calendar › Subscribe from web**.
+
+The phone asks again every 15 minutes or so (Google Calendar takes several hours, on its own
+schedule), so a change made in luach reaches it a little later. It covers a month back and a
+year ahead. A repeating event repeats there too; whom an event is for leads its title
+("Ruby and Lily: Swimming"). Who is invited, anything waiting for approval, and work calendars
+are never in it.
+
+The link is the key: anyone who has it can read the calendar, without signing in. luach keeps
+only a fingerprint of it, which is why it is shown once. If a link is lost, or reaches someone
+it should not, **Reset link** makes a new one and the old one stops working at once; **Turn
+off** ends it. A member who is removed takes their link with them.
+
+luach keeps the link out of its own log (`/feed/…`). **Your reverse proxy may not**: Caddy
+logs no requests unless told to, but nginx's access log records every path. With nginx, add
+a location that keeps it out:
+
+```nginx
+    location /feed/ {
+        access_log off;
+        proxy_pass http://127.0.0.1:8004;
+        proxy_set_header Host              $http_host;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $http_host;
+    }
+```
+
 ### A screen in the kitchen
 
 The wall board is `/board` on your address: everyone's day side by side, on a touch screen
@@ -1221,6 +1260,8 @@ noted, restore the backup you took before the upgrade, and `docker compose up -d
 - [ ] `LUACH_API_KEY` and `LUACH_TULIP_KEY` stay unset unless a program of yours needs them;
       then each is `openssl rand -hex 32`, and luach refuses to start with anything weaker.
 - [ ] `LUACH_COOKIE_SECURE` is not set to `0`.
+- [ ] Your reverse proxy does not write calendar-feed links (`/feed/…`) to its access log
+      (see [The phone's own calendar](#the-phones-own-calendar)).
 - [ ] Ollama, or any model server on this machine, is not reachable from the internet.
 - [ ] Backups run, are kept off the machine, and you have restored one.
 - [ ] You upgrade regularly: security fixes reach you only that way. Watch the repository's

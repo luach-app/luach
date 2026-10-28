@@ -557,6 +557,52 @@ blocks booking slots and, if asked, shows in the agenda. Nothing is ever written
 A Source is `{id, name, url, enabled, show_in_agenda, last_fetched, last_error, blocks}`.
 A feed that is not the caller's is a 404.
 
+## Calendar feed (each member their own; read by the phone's calendar app)
+A member's events in their phone's own calendar app (Apple Calendar, Google Calendar,
+Outlook), read-only, through a secret link the app subscribes to. Off until the member
+turns it on. Signed-in routes; a service key may read the status but not make, reset or
+drop a link (403).
+
+| Method | Path | Body | Returns |
+|---|---|---|---|
+| GET | /api/feed | | `{enabled, scope, created_at, last_read}` — never the link |
+| POST | /api/feed | `{scope?}` (`household`, the default, or `mine`) | the status plus `{url, webcal}`, this once (409 when it is already on: reset it instead) |
+| POST | /api/feed/reset | | a new `{url, webcal}`; the old link is dead from now (404 when it is off) |
+| PATCH | /api/feed | `{scope}` | the status; same link (400 on another scope, 404 when off) |
+| DELETE | /api/feed | | `ok` and the status; the link is dead |
+
+The link is `<LUACH_APP_URL>/feed/<token>.ics`; `webcal` is the same with `webcal://`,
+which a phone opens in its calendar app. The token is 32 random bytes (43 base64url
+characters) and only its SHA-256 is stored, so the link is shown when it is made and
+never again. `household` is every event; `mine` is the events the member is one of the
+people for, and those for nobody in particular. `last_read` is when a calendar app last
+read it (written at most every five minutes).
+
+**`GET /feed/<token>.ics`** is open: no session, no cookie, no key; the token is the
+proof. Exactly that path (anything else under `/feed/` is a 404 before any route), and
+only `GET` or `HEAD` (405). It answers:
+
+- `200 text/calendar; charset=utf-8`, with an `ETag` (`If-None-Match` gives `304`),
+  `Cache-Control: private, max-age=600`, and no `Set-Cookie`;
+- `404 {"error": "no such calendar feed"}` for every token that opens nothing (wrong,
+  reset, turned off, or a member who was removed), the same answer each time;
+- `429` with `Retry-After`: after 20 wrong tokens from one address, 30 reads of one link
+  or 60 reads from one address, per five minutes (`LUACH_LOGIN_LOCKOUT_SECS`);
+- `503` with `Retry-After` when the calendar cannot be read; the phone keeps what it had.
+
+The calendar covers 30 days back to a year ahead, in the household's zone (`TZID` with a
+`VTIMEZONE`; all-day events as `DATE`). Each event is a `VEVENT` with a stable `UID`
+(`<event id>@luach`), `LAST-MODIFIED` where luach knows it, the title, place and notes,
+and whom it is for: in `household`, `SUMMARY` starts with their names ("Ruby and Lily:
+Swimming") unless the title already says them, and `DESCRIPTION` starts with "For Ruby
+and Lily", in the member's language. A repeating event is one `VEVENT` with its `RRULE`
+cut to the window (its `COUNT` written as an `UNTIL`), an `EXDATE` for each deleted
+occurrence (or, in `mine`, one that is someone else's), and a `RECURRENCE-ID` override for
+each occurrence changed on its own; a rule that cannot be said exactly is listed one
+occurrence at a time. Never in it: attendee or organizer addresses, links to Google,
+anything held for approval or proposed by the email scan, and busy calendars. The path is
+redacted from the access log (`/feed/…`).
+
 ## Passkeys (WebAuthn)
 Passkeys are a second way to sign in; username + password stays. Payloads are the browser's own JSON shapes: options come from py_webauthn's `options_to_json` (fields base64url-encoded: `challenge`, `user.id`, `excludeCredentials[].id`, `allowCredentials[].id`), and verify calls take the `PublicKeyCredential` serialised the standard way (`id`, `rawId`, `type`, `response.{clientDataJSON, attestationObject | authenticatorData, signature, userHandle}`, all base64url; `credential.toJSON()` where supported). Every options call returns a `challenge_id` that must be echoed to the matching verify call.
 
