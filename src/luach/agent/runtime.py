@@ -1121,10 +1121,12 @@ async def stream_turn(
                             held = next(
                                 (h for h in turn.held if h["id"] == result.get("approval_id")), None
                             )
+                            # The gate's own sentence is written to the model ("…do not
+                            # retry"); the person's card shows the hold's reasons as words.
                             yield {
                                 "type": "held",
                                 **(held or {"id": result.get("approval_id")}),
-                                "reason_text": result.get("reason", ""),
+                                "reason_text": "",
                             }
                         if "created" in result:
                             created.append(result["created"])
