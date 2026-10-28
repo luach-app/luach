@@ -26,9 +26,11 @@ permissions: {contents: read}
 #                    is really 3.13 (lint and types are pinned to 3.12 and run in `backend (3.12)`)
 #   publish          the images, built once and tagged with the commit: ghcr.io/<owner>/luach and
 #                    ghcr.io/<owner>/luach-gmail-fake (the Gmail stand-in a test deployment's email
-#                    door polls, fixtures/gmail-fake), each :<sha7> and :main
+#                    door polls, fixtures/gmail-fake), each :<sha7> and :main, for linux/amd64 and
+#                    linux/arm64 (a Raspberry Pi, an ARM NAS, a Mac with Apple silicon)
 #   integration      the image publish just pushed, pulled by tag: it boots the way a hardened
-#                    deployment runs it, then end to end over HTTP (ci/integration)
+#                    deployment runs it, then end to end over HTTP (ci/integration), on the
+#                    runner's amd64
 #
 # publish waits for no test: a deployment that follows `main` gets the build a few minutes after
 # the merge, and can read these jobs' results on the commit before it promotes the build further.
@@ -129,7 +131,9 @@ jobs:
     name: publish (${{ matrix.image }})
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # arm64's dependency install runs under emulation: about 4 minutes of a 5-minute cold build
+    # on a fast machine, so more on a runner. The cache makes most builds far shorter.
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
@@ -158,16 +162,26 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      # arm64 is built under emulation on this amd64 runner. Only arm64's emulator, from an image
+      # pinned by digest like the actions, and not kept in the Actions cache: it runs privileged
+      # in the one job that can write packages.
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+        with:
+          image: docker.io/tonistiigi/binfmt:qemu-v10.2.3@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0
+          platforms: arm64
+          cache-image: false
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-      # One platform, the build's default provenance attestation, and the commit as the tag: the
-      # tag says which commit an image came from, and the digest printed below is what a
-      # deployment should pin, since a re-run on the same commit pushes the same tag over new bytes.
+      # Two platforms under one tag (a manifest list: each machine pulls its own), the build's
+      # default provenance attestation, and the commit as the tag: the tag says which commit an
+      # image came from, and the digest printed below is what a deployment should pin, since a
+      # re-run on the same commit pushes the same tag over new bytes. The web app is built once,
+      # natively, whatever the platform (the Dockerfile's web stage).
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         id: build
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.name.outputs.ref }}:${{ steps.name.outputs.tag }},${{ steps.name.outputs.ref }}:main
           labels: |

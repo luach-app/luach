@@ -178,7 +178,31 @@ class TestPublish:
         build = next(s for s in steps if s.get("id") == "build")
         tags = build["with"]["tags"].split(",")
         assert [t.rsplit(":", 1)[1] for t in tags] == ["${{ steps.name.outputs.tag }}", "main"]
-        assert build["with"]["push"] is True and build["with"]["platforms"] == "linux/amd64"
+        assert build["with"]["push"] is True
+
+    def test_for_x86_and_arm(self, ci: dict[str, Any]) -> None:
+        """Both images for amd64 and arm64, arm64 emulated with an emulator image pinned by
+        digest, set up before the builder that uses it."""
+        steps = ci["jobs"]["publish"]["steps"]
+        build = next(s for s in steps if s.get("id") == "build")
+        assert build["with"]["platforms"].split(",") == ["linux/amd64", "linux/arm64"]
+        uses = [str(s.get("uses", "")).split("@")[0] for s in steps]
+        assert uses.index("docker/setup-qemu-action") < uses.index("docker/setup-buildx-action")
+        qemu = next(s for s in steps if str(s.get("uses", "")).startswith("docker/setup-qemu"))
+        assert qemu["with"]["platforms"] == "arm64"
+        assert re.search(r"@sha256:[0-9a-f]{64}$", qemu["with"]["image"])
+        assert qemu["with"]["cache-image"] is False
+        # What made the image reproducible and traceable stays.
+        assert "org.opencontainers.image.revision=${{ github.sha }}" in build["with"]["labels"]
+        assert "provenance" not in build["with"] or build["with"]["provenance"] is not False
+        assert build["with"]["cache-from"] == "type=gha,scope=${{ matrix.image }}"
+
+    def test_the_web_app_is_built_once_not_emulated(self) -> None:
+        dockerfile = (ROOT / "Dockerfile").read_text()
+        assert "FROM --platform=$BUILDPLATFORM node:" in dockerfile
+        # Everything that ships Python runs on the image's own platform.
+        python = re.findall(r"^FROM (.*python.*)$", dockerfile, re.M)
+        assert python and not any("--platform" in line for line in python)
 
     def test_integration_tests_what_was_published(self, ci: dict[str, Any]) -> None:
         job = ci["jobs"]["integration"]
